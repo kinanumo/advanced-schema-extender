@@ -23,22 +23,42 @@
 }
 .yse-wrap > .description { margin: 0 0 18px; color: #646970; }
 
-/* ---------- Status table ---------- */
-.yse-status-wrap {
-    background: #fff;
-    border: 1px solid #c3c4c7;
-    border-radius: 6px;
-    padding: 16px 20px;
-    margin: 0 0 20px;
-    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+/* ---------- Section h2 (outside / inside card) ---------- */
+.yse-section-h2 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 22px 0 8px;
+    padding: 0;
+    color: #1d2327;
 }
-.yse-status-wrap h2 {
-    margin: 0 0 8px;
+.yse-section-h2--inner {
+    margin-top: 28px;
+    padding-top: 14px;
+    border-top: 1px solid #f0f0f1;
+}
+.yse-card-body > .yse-section-h2--inner:first-of-type {
+    /* never used in current layout, but keep safe defaults if reordered */
+    border-top: 0;
+    padding-top: 0;
+    margin-top: 18px;
+}
+
+/* ---------- Status table ---------- */
+.yse-status-title {
     font-size: 13px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: .04em;
     color: #50575e;
+    margin: 0 0 8px;
+}
+.yse-status-wrap {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 0 0 22px;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
 }
 .yse-status-table { width: 100%; border-collapse: collapse; }
 .yse-status-table th,
@@ -47,6 +67,7 @@
     text-align: left;
     font-size: 13px;
     border-bottom: 1px solid #f0f0f1;
+    vertical-align: middle;
 }
 .yse-status-table thead th {
     background: #f6f7f7;
@@ -55,10 +76,27 @@
 }
 .yse-status-table tbody tr:last-child td { border-bottom: 0; }
 
-.yse-val-yoast    { color: #646970; }
-.yse-val-extender { color: #2271b1; font-weight: 600; }
-.yse-val-effective.yse-overridden { color: #1d8a4c; font-weight: 600; }
-.yse-val-empty    { color: #a7aaad; font-style: italic; }
+.yse-val-yoast     { color: #646970; }
+.yse-val-extender  { color: #1d2327; }
+.yse-val-effective { color: #1d2327; font-weight: 600; }
+.yse-val-empty     { color: #a7aaad; font-style: italic; }
+
+/* ---------- Source badges ---------- */
+.yse-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    border-radius: 10px;
+    line-height: 1.6;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+.yse-badge--yoast    { background: #e6f0fa; color: #1d4f8c; border-color: #c5dcf2; }
+.yse-badge--extender { background: #e7f5ec; color: #1d8a4c; border-color: #c2e6cd; }
+.yse-badge--merged   { background: #fff4e0; color: #8a5a1d; border-color: #f2dcb2; }
 
 /* ---------- Boxed cards ---------- */
 .yse-card {
@@ -90,6 +128,33 @@
     padding-left: 0;
     font-weight: 500;
 }
+.yse-card-body p.submit {
+    margin-top: 22px;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f1;
+}
+
+/* Section divider row inside form-table */
+.yse-row-divider th {
+    background: #f6f7f7;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #50575e;
+    padding: 8px 12px !important;
+    width: auto !important;
+    border-radius: 4px;
+}
+
+/* LB subtype dropdowns */
+.yse-subtype-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+.yse-subtype-grid select { max-width: 220px; }
 
 /* ---------- Logo picker ---------- */
 .yse-logo-picker {
