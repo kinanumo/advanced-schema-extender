@@ -111,7 +111,7 @@ final class YSE_Agency_UI {
             'ml_locations'   => [],
 
             // FAQ
-            'faq_post_types' => [ 'post', 'page' ],
+            'faq_post_types' => [],
 
             // Compatibility
             'override_org'   => false,
@@ -1156,7 +1156,7 @@ JS;
                             </label>
                         <?php endforeach; ?>
                     </div>
-                    <p class="description"><?php esc_html_e( 'Defaults to Posts and Pages.', 'yse-agency' ); ?></p>
+                    <p class="description"><?php esc_html_e( 'No post types are enabled by default.', 'yse-agency' ); ?></p>
                 </td>
             </tr>
         </table>
@@ -1323,20 +1323,22 @@ JS;
     }
 
     /* ================================================================== *
-     *  FAQ meta box (still scaffold — fields land in the next step)
+     *  FAQ meta box
      * ================================================================== */
 
     public function register_meta_boxes(): void {
-        $settings = (array) get_option( YSE_OPTION_KEY, [] );
-        $screens  = is_array( $settings['faq_post_types'] ?? null ) && ! empty( $settings['faq_post_types'] )
-            ? $settings['faq_post_types']
-            : [ 'post', 'page' ];
+        $settings   = (array) get_option( YSE_OPTION_KEY, [] );
+        $post_types = is_array( $settings['faq_post_types'] ?? null ) ? $settings['faq_post_types'] : [];
+
+        if ( empty( $post_types ) ) {
+            return;
+        }
 
         add_meta_box(
             'yse_faq_builder',
-            __( 'FAQ Schema Builder', 'yse-agency' ),
+            __( 'Schema Extender FAQ', 'yse-agency' ),
             [ $this, 'render_faq_meta_box' ],
-            $screens,
+            $post_types,
             'normal',
             'default'
         );
@@ -1344,20 +1346,74 @@ JS;
 
     public function render_faq_meta_box( WP_Post $post ): void {
         wp_nonce_field( 'yse_save_faq_' . $post->ID, '_yse_faq_nonce' );
+
+        $items = [];
+        $raw   = get_post_meta( $post->ID, '_yse_faq_items', true );
+        if ( is_string( $raw ) && '' !== $raw ) {
+            $decoded = json_decode( $raw, true );
+            if ( is_array( $decoded ) ) {
+                $items = $decoded;
+            }
+        }
         ?>
         <p class="description">
-            <?php esc_html_e( 'FAQ builder will populate here. Scaffold only.', 'yse-agency' ); ?>
+            <?php esc_html_e( 'Add up to 20 Q&A pairs. Each pair becomes a Question entry in the FAQPage schema node for this post.', 'yse-agency' ); ?>
         </p>
-        <div id="yse-faq-list"></div>
-        <script type="text/template" id="yse-faq-template"></script>
+        <div id="yse-faq-list">
+            <?php foreach ( $items as $item ) : ?>
+                <?php $this->render_faq_row( (array) $item ); ?>
+            <?php endforeach; ?>
+        </div>
         <p>
             <button type="button" class="button yse-add-faq">
-                <?php esc_html_e( '+ Add FAQ Item', 'yse-agency' ); ?>
+                <?php esc_html_e( '+ Add Question', 'yse-agency' ); ?>
             </button>
         </p>
+        <script type="text/template" id="yse-faq-template"><?php
+            $this->render_faq_row( [ 'q' => '', 'a' => '' ] );
+        ?></script>
         <?php
     }
 
+    /**
+     * Render a single FAQ row for the metabox.
+     *
+     * Stored answers contain literal <br> tags; convert them back to real
+     * newlines so the textarea displays them as line breaks for the editor.
+     */
+    private function render_faq_row( array $item ): void {
+        $answer_display = preg_replace( '/<br\s*\/?>/i', "\n", (string) ( $item['a'] ?? '' ) );
+        ?>
+        <div class="yse-faq-row">
+            <label>
+                <?php esc_html_e( 'Question', 'yse-agency' ); ?>
+                <input type="text"
+                       name="yse_faq[q][]"
+                       value="<?php echo esc_attr( (string) ( $item['q'] ?? '' ) ); ?>"
+                       placeholder="<?php esc_attr_e( 'Enter question…', 'yse-agency' ); ?>" />
+            </label>
+            <label>
+                <?php esc_html_e( 'Answer', 'yse-agency' ); ?>
+                <textarea name="yse_faq[a][]"
+                          rows="3"
+                          placeholder="<?php esc_attr_e( 'Enter answer…', 'yse-agency' ); ?>"><?php echo esc_textarea( $answer_display ); ?></textarea>
+            </label>
+            <a href="#" class="yse-remove-faq"><?php esc_html_e( 'Remove', 'yse-agency' ); ?></a>
+        </div>
+        <?php
+    }
+
+    /**
+     * Persist FAQ items from the metabox form.
+     *
+     * Newline handling (critical — must never produce "nn"):
+     *   1. wp_unslash() the raw POST value first.
+     *   2. Normalize \r\n and lone \r to \n via str_replace (not preg_replace).
+     *   3. Convert each \n to <br> via str_replace.
+     *   4. Store the <br>-encoded string in JSON.
+     *
+     * Loading back: render_faq_row() reverses <br> → \n for the textarea.
+     */
     public function save_post_meta( int $post_id, WP_Post $post ): void {
         if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) { return; }
         if ( wp_is_post_revision( $post_id ) )                { return; }
@@ -1368,7 +1424,51 @@ JS;
             ) ) { return; }
         if ( ! current_user_can( 'edit_post', $post_id ) )    { return; }
 
-        // Real persistence implemented in the FAQ step.
+        $questions = isset( $_POST['yse_faq']['q'] ) ? (array) $_POST['yse_faq']['q'] : [];
+        $answers   = isset( $_POST['yse_faq']['a'] ) ? (array) $_POST['yse_faq']['a'] : [];
+
+        $allowed_html = [
+            'br'     => [],
+            'strong' => [],
+            'b'      => [],
+            'em'     => [],
+            'i'      => [],
+            'a'      => [ 'href' => [], 'title' => [], 'target' => [], 'rel' => [] ],
+            'code'   => [],
+            'u'      => [],
+        ];
+
+        $items = [];
+        foreach ( $questions as $i => $raw_q ) {
+            if ( count( $items ) >= 20 ) {
+                break;
+            }
+
+            $q = sanitize_text_field( wp_unslash( (string) $raw_q ) );
+
+            // Skip blank rows.
+            if ( '' === $q ) {
+                continue;
+            }
+
+            // Enforce trailing question mark.
+            if ( '?' !== substr( $q, -1 ) ) {
+                $q .= '?';
+            }
+
+            // Unslash first, then normalise newlines to LF, then LF → <br>.
+            $raw_a = wp_unslash( (string) ( $answers[ $i ] ?? '' ) );
+            $raw_a = str_replace( "\r\n", "\n", $raw_a );
+            $raw_a = str_replace( "\r",   "\n", $raw_a );
+            $a     = str_replace( "\n", '<br>', $raw_a );
+
+            // Sanitize inline HTML (the <br> tags we just created are preserved).
+            $a = wp_kses( $a, $allowed_html );
+
+            $items[] = [ 'q' => $q, 'a' => $a ];
+        }
+
+        update_post_meta( $post_id, '_yse_faq_items', wp_json_encode( $items ) );
     }
 
     /* ================================================================== *
@@ -1611,26 +1711,183 @@ JS;
             $this->default_settings()
         );
 
-        if ( empty( $s['ml_enabled'] ) ) {
+        // FAQ injection — singular posts only.
+        $graph = $this->inject_faq_node( $graph, $s );
+
+        // Multi-location injection.
+        if ( ! empty( $s['ml_enabled'] ) ) {
+            $locations = is_array( $s['ml_locations'] ) ? $s['ml_locations'] : [];
+            if ( ! empty( $locations ) ) {
+                $org_id = $this->find_org_id( $graph );
+                foreach ( $locations as $L ) {
+                    if ( ! is_array( $L ) || empty( $L['enabled'] ) ) {
+                        continue;
+                    }
+                    $node = $this->build_location_node( $L, $s, $org_id );
+                    if ( null !== $node ) {
+                        $graph[] = $node;
+                    }
+                }
+            }
+        }
+
+        return $graph;
+    }
+
+    /* ================================================================== *
+     *  FAQ schema injection
+     * ================================================================== */
+
+    /**
+     * Inject a FAQPage node into the graph for enabled singular post types.
+     *
+     * Skips injection when:
+     *  - Not a singular view.
+     *  - Post type is not in the FAQ-enabled list.
+     *  - Post has no saved FAQ items.
+     *  - A FAQPage node already exists in the graph.
+     */
+    private function inject_faq_node( array $graph, array $s ): array {
+        if ( ! is_singular() ) {
             return $graph;
         }
 
-        $locations = is_array( $s['ml_locations'] ) ? $s['ml_locations'] : [];
-        if ( empty( $locations ) ) {
+        $post = get_queried_object();
+        if ( ! $post instanceof WP_Post ) {
             return $graph;
         }
 
-        $org_id = $this->find_org_id( $graph );
+        $enabled_types = is_array( $s['faq_post_types'] ) ? $s['faq_post_types'] : [];
+        if ( ! in_array( $post->post_type, $enabled_types, true ) ) {
+            return $graph;
+        }
 
-        foreach ( $locations as $L ) {
-            if ( ! is_array( $L ) || empty( $L['enabled'] ) ) {
+        // Load stored items.
+        $raw = get_post_meta( $post->ID, '_yse_faq_items', true );
+        if ( ! is_string( $raw ) || '' === $raw ) {
+            return $graph;
+        }
+        $items = json_decode( $raw, true );
+        if ( ! is_array( $items ) || empty( $items ) ) {
+            return $graph;
+        }
+
+        // Bail if a FAQPage node already exists anywhere in the graph.
+        foreach ( $graph as $gnode ) {
+            if ( ! is_array( $gnode ) ) {
                 continue;
             }
-            $node = $this->build_location_node( $L, $s, $org_id );
-            if ( null !== $node ) {
-                $graph[] = $node;
+            $types = (array) ( $gnode['@type'] ?? [] );
+            if ( in_array( 'FAQPage', $types, true ) ) {
+                return $graph;
             }
         }
+
+        $post_url  = (string) get_permalink( $post->ID );
+        $faq_id    = $post_url . '#/schema/faq';
+        $webpage_id = $this->find_webpage_id( $graph, $post_url );
+
+        // Build mainEntity array.
+        $main_entity = [];
+        foreach ( $items as $item ) {
+            if ( ! is_array( $item ) || '' === trim( (string) ( $item['q'] ?? '' ) ) ) {
+                continue;
+            }
+            $main_entity[] = [
+                '@type'          => 'Question',
+                'name'           => (string) $item['q'],
+                'acceptedAnswer' => [
+                    '@type' => 'Answer',
+                    'text'  => (string) ( $item['a'] ?? '' ),
+                ],
+            ];
+        }
+
+        if ( empty( $main_entity ) ) {
+            return $graph;
+        }
+
+        $faq_node = [
+            '@type'         => 'FAQPage',
+            '@id'           => $faq_id,
+            'url'           => $post_url,
+            'headline'      => get_the_title( $post->ID ),
+            'datePublished' => gmdate( 'Y-m-d\TH:i:s\Z', (int) strtotime( $post->post_date_gmt ) ),
+            'dateModified'  => gmdate( 'Y-m-d\TH:i:s\Z', (int) strtotime( $post->post_modified_gmt ) ),
+            'mainEntity'    => $main_entity,
+        ];
+
+        if ( '' !== $webpage_id ) {
+            $faq_node['isPartOf'] = [ '@id' => $webpage_id ];
+        }
+
+        $graph[] = $faq_node;
+
+        // Add hasPart pointer on the WebPage node (deduplicated).
+        if ( '' !== $webpage_id ) {
+            $graph = $this->inject_faq_has_part( $graph, $faq_id, $webpage_id );
+        }
+
+        return $graph;
+    }
+
+    /**
+     * Find the WebPage node @id in the graph.
+     * Falls back to the standard Yoast '#webpage' fragment.
+     */
+    private function find_webpage_id( array $graph, string $post_url ): string {
+        foreach ( $graph as $node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            $types = (array) ( $node['@type'] ?? [] );
+            foreach ( $types as $t ) {
+                // Match 'WebPage' and any subtype that ends in 'Page'.
+                if ( 'WebPage' === $t || substr( (string) $t, -4 ) === 'Page' ) {
+                    return (string) ( $node['@id'] ?? '' );
+                }
+            }
+        }
+        return $post_url . '#webpage';
+    }
+
+    /**
+     * Add a hasPart pointer to the WebPage node, deduplicating existing entries.
+     */
+    private function inject_faq_has_part( array $graph, string $faq_id, string $webpage_id ): array {
+        foreach ( $graph as &$node ) {
+            if ( ! is_array( $node ) || (string) ( $node['@id'] ?? '' ) !== $webpage_id ) {
+                continue;
+            }
+
+            // Normalise hasPart to a list of objects.
+            $has_part = [];
+            if ( isset( $node['hasPart'] ) ) {
+                // Single object: { '@id': '...' } — convert to array.
+                if ( is_array( $node['hasPart'] ) && array_key_exists( '@id', $node['hasPart'] ) ) {
+                    $has_part = [ $node['hasPart'] ];
+                } else {
+                    $has_part = (array) $node['hasPart'];
+                }
+            }
+
+            // Deduplicate: only append if not already present.
+            $already_present = false;
+            foreach ( $has_part as $part ) {
+                if ( is_array( $part ) && (string) ( $part['@id'] ?? '' ) === $faq_id ) {
+                    $already_present = true;
+                    break;
+                }
+            }
+
+            if ( ! $already_present ) {
+                $has_part[] = [ '@id' => $faq_id ];
+            }
+
+            $node['hasPart'] = array_values( $has_part );
+            break;
+        }
+        unset( $node );
 
         return $graph;
     }
