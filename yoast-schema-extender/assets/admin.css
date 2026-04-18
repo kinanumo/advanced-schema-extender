@@ -1,0 +1,226 @@
+/* =================================================================
+ * Yoast Schema Extender — Agency Pack
+ * Admin stylesheet (v2.5.5)
+ * Loaded on: settings_page_yse-settings, post.php, post-new.php
+ * ================================================================= */
+
+/* ---------- Page chrome ---------- */
+.yse-wrap          { max-width: 1100px; }
+.yse-wrap h1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+.yse-wrap .yse-version {
+    font-size: 12px;
+    font-weight: 500;
+    color: #50575e;
+    background: #f0f0f1;
+    padding: 2px 8px;
+    border-radius: 10px;
+    line-height: 1.6;
+}
+.yse-wrap > .description { margin: 0 0 18px; color: #646970; }
+
+/* ---------- Status table ---------- */
+.yse-status-wrap {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 0 0 20px;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+.yse-status-wrap h2 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #50575e;
+}
+.yse-status-table { width: 100%; border-collapse: collapse; }
+.yse-status-table th,
+.yse-status-table td {
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 13px;
+    border-bottom: 1px solid #f0f0f1;
+}
+.yse-status-table thead th {
+    background: #f6f7f7;
+    font-weight: 600;
+    color: #1d2327;
+}
+.yse-status-table tbody tr:last-child td { border-bottom: 0; }
+
+.yse-val-yoast    { color: #646970; }
+.yse-val-extender { color: #2271b1; font-weight: 600; }
+.yse-val-effective.yse-overridden { color: #1d8a4c; font-weight: 600; }
+.yse-val-empty    { color: #a7aaad; font-style: italic; }
+
+/* ---------- Boxed cards ---------- */
+.yse-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px;
+    margin: 0 0 20px;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+    overflow: hidden;
+}
+.yse-card-header {
+    padding: 14px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e5e5e5;
+}
+.yse-card-header h2 {
+    margin: 0 0 2px;
+    font-size: 14px;
+    font-weight: 600;
+}
+.yse-card-header .description {
+    margin: 0;
+    font-size: 12.5px;
+    color: #646970;
+}
+.yse-card-body { padding: 14px 20px; }
+.yse-card-body .form-table th {
+    width: 200px;
+    padding-left: 0;
+    font-weight: 500;
+}
+
+/* ---------- Logo picker ---------- */
+.yse-logo-picker {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+#yse-logo-preview {
+    max-width: 96px;
+    max-height: 96px;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    padding: 4px;
+    background: #fff;
+    display: none;
+}
+.yse-clear-logo {
+    display: none;
+    color: #b32d2e !important;
+    text-decoration: none;
+}
+
+/* ---------- Multi-location cards ---------- */
+#yse-locations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.yse-location-card {
+    border: 1px solid #dcdcde;
+    border-radius: 5px;
+    background: #fafafa;
+}
+.yse-location-card.is-collapsed .yse-location-body { display: none; }
+.yse-location-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #f0f0f1;
+    border-bottom: 1px solid #dcdcde;
+    border-radius: 5px 5px 0 0;
+}
+.yse-location-card.is-collapsed .yse-location-head {
+    border-bottom: 0;
+    border-radius: 5px;
+}
+.yse-location-title {
+    flex: 1;
+    font-weight: 600;
+    font-size: 13px;
+}
+.yse-location-head .button-link { font-size: 12px; }
+.yse-remove-location { color: #b32d2e !important; }
+.yse-location-body { padding: 12px 14px; }
+
+/* ---------- FAQ rows ---------- */
+#yse-faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 8px 0 12px;
+}
+.yse-faq-row {
+    background: #f9f9f9;
+    border: 1px solid #dcdcde;
+    border-radius: 5px;
+    padding: 12px;
+    display: grid;
+    gap: 8px;
+}
+.yse-faq-row label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #1d2327;
+}
+.yse-faq-row input[type="text"],
+.yse-faq-row textarea { width: 100%; }
+.yse-remove-faq {
+    justify-self: end;
+    color: #b32d2e !important;
+    font-size: 12px;
+    text-decoration: none;
+}
+
+/* ---------- Import / Export panel (outside main card) ---------- */
+.yse-ie-panel {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 24px 0 0;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+.yse-ie-panel h2 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    border-bottom: 1px solid #e5e5e5;
+    padding-bottom: 10px;
+}
+.yse-ie-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+.yse-ie-col h3 {
+    margin: 0 0 6px;
+    font-size: 13px;
+    font-weight: 600;
+}
+.yse-ie-col p.description { margin: 0 0 8px; }
+
+#yse-export-json {
+    width: 100%;
+    min-height: 140px;
+    font-family: Menlo, Consolas, monospace;
+    font-size: 12px;
+    background: #f6f7f7;
+}
+.yse-copy-export { margin-top: 6px; }
+
+/* ---------- Notices ---------- */
+.yse-wrap .notice { margin: 12px 0 18px; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 782px) {
+    .yse-ie-grid { grid-template-columns: 1fr; }
+    .yse-card-body .form-table th { width: auto; padding-bottom: 0; }
+    .yse-location-head { flex-wrap: wrap; }
+}
