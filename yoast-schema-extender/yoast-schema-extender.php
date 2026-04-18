@@ -335,16 +335,31 @@ final class YSE_Agency_UI {
             return $this->blank_location();
         }
         return [
-            'name'    => sanitize_text_field( (string) ( $raw['name']    ?? '' ) ),
-            'enabled' => ! empty( $raw['enabled'] ),
-            'subtype' => $this->sanitize_lb_subtype(    $raw['subtype'] ?? '' ),
-            'street'  => sanitize_text_field( (string) ( $raw['street']  ?? '' ) ),
-            'city'    => sanitize_text_field( (string) ( $raw['city']    ?? '' ) ),
-            'region'  => sanitize_text_field( (string) ( $raw['region']  ?? '' ) ),
-            'postal'  => sanitize_text_field( (string) ( $raw['postal']  ?? '' ) ),
-            'country' => sanitize_text_field( (string) ( $raw['country'] ?? '' ) ),
-            'phone'   => sanitize_text_field( (string) ( $raw['phone']   ?? '' ) ),
-            'email'   => sanitize_email(      (string) ( $raw['email']   ?? '' ) ),
+            'name'          => sanitize_text_field( (string) ( $raw['name']       ?? '' ) ),
+            'enabled'       => ! empty( $raw['enabled'] ),
+            'page_slug'     => sanitize_title(       (string) ( $raw['page_slug'] ?? '' ) ),
+            'url'           => esc_url_raw(           (string) ( $raw['url']       ?? '' ) ),
+            'image'         => esc_url_raw(           (string) ( $raw['image']     ?? '' ) ),
+            'telephone'     => sanitize_text_field(  (string) ( $raw['telephone'] ?? '' ) ),
+            'email'         => sanitize_email(       (string) ( $raw['email']      ?? '' ) ),
+            'priceRange'    => sanitize_text_field(  (string) ( $raw['priceRange'] ?? '' ) ),
+            'lb_subtype'    => $this->sanitize_lb_subtype( $raw['lb_subtype']  ?? '' ),
+            'lb_subtype2'   => $this->sanitize_lb_subtype( $raw['lb_subtype2'] ?? '' ),
+            'lb_subtype3'   => $this->sanitize_lb_subtype( $raw['lb_subtype3'] ?? '' ),
+            'addr_street'   => sanitize_text_field( (string) ( $raw['addr_street']  ?? '' ) ),
+            'addr_city'     => sanitize_text_field( (string) ( $raw['addr_city']    ?? '' ) ),
+            'addr_region'   => sanitize_text_field( (string) ( $raw['addr_region']  ?? '' ) ),
+            'addr_postal'   => sanitize_text_field( (string) ( $raw['addr_postal']  ?? '' ) ),
+            'addr_country'  => sanitize_text_field( (string) ( $raw['addr_country'] ?? '' ) ),
+            'geo_lat'       => $this->sanitize_geo( $raw['geo_lat'] ?? '' ),
+            'geo_lng'       => $this->sanitize_geo( $raw['geo_lng'] ?? '' ),
+            'service_area'  => $this->sanitize_lines_as_text( $raw['service_area']  ?? '' ),
+            'opening_hours' => $this->sanitize_json_field(
+                $raw['opening_hours'] ?? '',
+                [],
+                'location_opening_hours',
+                __( 'Location Opening Hours', 'yse-agency' )
+            ),
         ];
     }
 
@@ -354,16 +369,26 @@ final class YSE_Agency_UI {
 
     public function blank_location(): array {
         return [
-            'name'    => '',
-            'enabled' => true,
-            'subtype' => '',
-            'street'  => '',
-            'city'    => '',
-            'region'  => '',
-            'postal'  => '',
-            'country' => '',
-            'phone'   => '',
-            'email'   => '',
+            'name'          => '',
+            'enabled'       => true,
+            'page_slug'     => '',
+            'url'           => '',
+            'image'         => '',
+            'telephone'     => '',
+            'email'         => '',
+            'priceRange'    => '',
+            'lb_subtype'    => '',
+            'lb_subtype2'   => '',
+            'lb_subtype3'   => '',
+            'addr_street'   => '',
+            'addr_city'     => '',
+            'addr_region'   => '',
+            'addr_postal'   => '',
+            'addr_country'  => '',
+            'geo_lat'       => '',
+            'geo_lng'       => '',
+            'service_area'  => [],
+            'opening_hours' => [],
         ];
     }
 
@@ -877,9 +902,9 @@ JS;
                 <th scope="row"><?php esc_html_e( 'LocalBusiness Subtypes', 'yse-agency' ); ?></th>
                 <td>
                     <div class="yse-subtype-grid">
-                        <?php $this->render_subtype_select( 'lb_subtype',  (string) $s['lb_subtype']  ); ?>
-                        <?php $this->render_subtype_select( 'lb_subtype2', (string) $s['lb_subtype2'] ); ?>
-                        <?php $this->render_subtype_select( 'lb_subtype3', (string) $s['lb_subtype3'] ); ?>
+                        <?php $this->render_subtype_select( [ 'lb_subtype'  ], (string) $s['lb_subtype']  ); ?>
+                        <?php $this->render_subtype_select( [ 'lb_subtype2' ], (string) $s['lb_subtype2'] ); ?>
+                        <?php $this->render_subtype_select( [ 'lb_subtype3' ], (string) $s['lb_subtype3'] ); ?>
                     </div>
                     <p class="description"><?php esc_html_e( 'Up to three Schema.org LocalBusiness subtypes. Most businesses only need the first.', 'yse-agency' ); ?></p>
                 </td>
@@ -932,9 +957,13 @@ JS;
         <?php
     }
 
-    private function render_subtype_select( string $field, string $current ): void {
+    /**
+     * @param array  $path    Field path segments passed to field_name() — e.g. ['lb_subtype'] or ['ml_locations','0','lb_subtype'].
+     * @param string $current Currently-selected value.
+     */
+    private function render_subtype_select( array $path, string $current ): void {
         ?>
-        <select name="<?php echo $this->field_name( $field ); ?>">
+        <select name="<?php echo $this->field_name( ...$path ); ?>">
             <option value=""><?php esc_html_e( '— None —', 'yse-agency' ); ?></option>
             <?php foreach ( $this->lb_subtypes() as $value => $label ) : ?>
                 <option value="<?php echo esc_attr( $value ); ?>" <?php selected( $current, $value ); ?>><?php echo esc_html( $label ); ?></option>
@@ -994,46 +1023,108 @@ JS;
             </div>
             <div class="yse-location-body">
                 <table class="form-table" role="presentation">
+
+                    <tr class="yse-row-divider"><th colspan="2"><?php esc_html_e( 'Identity', 'yse-agency' ); ?></th></tr>
                     <tr>
                         <th scope="row"><?php esc_html_e( 'Name', 'yse-agency' ); ?></th>
                         <td><input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'name' ); ?>" value="<?php echo esc_attr( (string) $loc['name'] ); ?>" class="regular-text" /></td>
                     </tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'Subtype', 'yse-agency' ); ?></th>
+                        <th scope="row"><?php esc_html_e( 'Page Slug', 'yse-agency' ); ?></th>
                         <td>
-                            <select name="<?php echo $this->field_name( 'ml_locations', $idx, 'subtype' ); ?>">
-                                <option value=""><?php esc_html_e( '— LocalBusiness —', 'yse-agency' ); ?></option>
-                                <?php foreach ( $this->lb_subtypes() as $value => $label ) : ?>
-                                    <option value="<?php echo esc_attr( $value ); ?>" <?php selected( (string) $loc['subtype'], $value ); ?>><?php echo esc_html( $label ); ?></option>
-                                <?php endforeach; ?>
-                            </select>
+                            <input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'page_slug' ); ?>" value="<?php echo esc_attr( (string) $loc['page_slug'] ); ?>" class="regular-text" placeholder="locations/downtown" />
+                            <p class="description"><?php esc_html_e( 'Used to build a fallback URL when Location URL is empty.', 'yse-agency' ); ?></p>
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'Street', 'yse-agency' ); ?></th>
-                        <td><input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'street' ); ?>" value="<?php echo esc_attr( (string) $loc['street'] ); ?>" class="regular-text" /></td>
+                        <th scope="row"><?php esc_html_e( 'Location URL', 'yse-agency' ); ?></th>
+                        <td><input type="url" name="<?php echo $this->field_name( 'ml_locations', $idx, 'url' ); ?>" value="<?php echo esc_attr( (string) $loc['url'] ); ?>" class="regular-text" placeholder="https://example.com/location/" /></td>
                     </tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'City / Region', 'yse-agency' ); ?></th>
+                        <th scope="row"><?php esc_html_e( 'Image URL', 'yse-agency' ); ?></th>
+                        <td><input type="url" name="<?php echo $this->field_name( 'ml_locations', $idx, 'image' ); ?>" value="<?php echo esc_attr( (string) $loc['image'] ); ?>" class="regular-text" placeholder="https://example.com/location-photo.jpg" /></td>
+                    </tr>
+
+                    <tr class="yse-row-divider"><th colspan="2"><?php esc_html_e( 'Contact', 'yse-agency' ); ?></th></tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'Telephone', 'yse-agency' ); ?></th>
                         <td>
-                            <input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'city' );   ?>" value="<?php echo esc_attr( (string) $loc['city'] );   ?>" class="regular-text" placeholder="<?php esc_attr_e( 'City',   'yse-agency' ); ?>" />
-                            <input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'region' ); ?>" value="<?php echo esc_attr( (string) $loc['region'] ); ?>" class="regular-text" placeholder="<?php esc_attr_e( 'Region', 'yse-agency' ); ?>" />
+                            <input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'telephone' ); ?>" value="<?php echo esc_attr( (string) $loc['telephone'] ); ?>" class="regular-text" placeholder="+1 555 123 4567" />
+                            <p class="description"><?php esc_html_e( 'Inherits global telephone if empty.', 'yse-agency' ); ?></p>
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'Postal / Country', 'yse-agency' ); ?></th>
+                        <th scope="row"><?php esc_html_e( 'Email', 'yse-agency' ); ?></th>
                         <td>
-                            <input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'postal' );  ?>" value="<?php echo esc_attr( (string) $loc['postal'] );  ?>" class="regular-text" placeholder="<?php esc_attr_e( 'Postal',  'yse-agency' ); ?>" />
-                            <input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'country' ); ?>" value="<?php echo esc_attr( (string) $loc['country'] ); ?>" class="regular-text" placeholder="<?php esc_attr_e( 'Country', 'yse-agency' ); ?>" />
+                            <input type="email" name="<?php echo $this->field_name( 'ml_locations', $idx, 'email' ); ?>" value="<?php echo esc_attr( (string) $loc['email'] ); ?>" class="regular-text" />
+                            <p class="description"><?php esc_html_e( 'Inherits global contact email if empty.', 'yse-agency' ); ?></p>
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'Phone / Email', 'yse-agency' ); ?></th>
+                        <th scope="row"><?php esc_html_e( 'Price Range', 'yse-agency' ); ?></th>
+                        <td><input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'priceRange' ); ?>" value="<?php echo esc_attr( (string) $loc['priceRange'] ); ?>" class="small-text" placeholder="$$" /></td>
+                    </tr>
+
+                    <tr class="yse-row-divider"><th colspan="2"><?php esc_html_e( 'Schema Type', 'yse-agency' ); ?></th></tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'LocalBusiness Subtypes', 'yse-agency' ); ?></th>
                         <td>
-                            <input type="text"  name="<?php echo $this->field_name( 'ml_locations', $idx, 'phone' ); ?>" value="<?php echo esc_attr( (string) $loc['phone'] ); ?>" class="regular-text" placeholder="<?php esc_attr_e( 'Phone', 'yse-agency' ); ?>" />
-                            <input type="email" name="<?php echo $this->field_name( 'ml_locations', $idx, 'email' ); ?>" value="<?php echo esc_attr( (string) $loc['email'] ); ?>" class="regular-text" placeholder="<?php esc_attr_e( 'Email', 'yse-agency' ); ?>" />
+                            <div class="yse-subtype-grid">
+                                <?php $this->render_subtype_select( [ 'ml_locations', $idx, 'lb_subtype'  ], (string) $loc['lb_subtype']  ); ?>
+                                <?php $this->render_subtype_select( [ 'ml_locations', $idx, 'lb_subtype2' ], (string) $loc['lb_subtype2'] ); ?>
+                                <?php $this->render_subtype_select( [ 'ml_locations', $idx, 'lb_subtype3' ], (string) $loc['lb_subtype3'] ); ?>
+                            </div>
                         </td>
                     </tr>
+
+                    <tr class="yse-row-divider"><th colspan="2"><?php esc_html_e( 'Address', 'yse-agency' ); ?></th></tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'Street Address', 'yse-agency' ); ?></th>
+                        <td><input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'addr_street' ); ?>" value="<?php echo esc_attr( (string) $loc['addr_street'] ); ?>" class="regular-text" /></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'City', 'yse-agency' ); ?></th>
+                        <td><input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'addr_city' ); ?>" value="<?php echo esc_attr( (string) $loc['addr_city'] ); ?>" class="regular-text" /></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'State / Region', 'yse-agency' ); ?></th>
+                        <td><input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'addr_region' ); ?>" value="<?php echo esc_attr( (string) $loc['addr_region'] ); ?>" class="regular-text" /></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'Postal Code', 'yse-agency' ); ?></th>
+                        <td><input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'addr_postal' ); ?>" value="<?php echo esc_attr( (string) $loc['addr_postal'] ); ?>" class="regular-text" /></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'Country', 'yse-agency' ); ?></th>
+                        <td><input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'addr_country' ); ?>" value="<?php echo esc_attr( (string) $loc['addr_country'] ); ?>" class="regular-text" placeholder="US, GB, AU…" /></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'Latitude / Longitude', 'yse-agency' ); ?></th>
+                        <td>
+                            <input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'geo_lat' ); ?>" value="<?php echo esc_attr( (string) $loc['geo_lat'] ); ?>" class="small-text" placeholder="<?php esc_attr_e( 'Latitude',  'yse-agency' ); ?>" />
+                            <input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'geo_lng' ); ?>" value="<?php echo esc_attr( (string) $loc['geo_lng'] ); ?>" class="small-text" placeholder="<?php esc_attr_e( 'Longitude', 'yse-agency' ); ?>" />
+                        </td>
+                    </tr>
+
+                    <tr class="yse-row-divider"><th colspan="2"><?php esc_html_e( 'Service Area &amp; Hours', 'yse-agency' ); ?></th></tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'Service Area', 'yse-agency' ); ?></th>
+                        <td>
+                            <textarea name="<?php echo $this->field_name( 'ml_locations', $idx, 'service_area' ); ?>" rows="3" class="large-text"><?php echo esc_textarea( $this->lines_to_text( $loc['service_area'] ) ); ?></textarea>
+                            <p class="description"><?php esc_html_e( 'One city or region per line.', 'yse-agency' ); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php esc_html_e( 'Opening Hours (JSON)', 'yse-agency' ); ?></th>
+                        <td>
+                            <textarea name="<?php echo $this->field_name( 'ml_locations', $idx, 'opening_hours' ); ?>" rows="4" class="large-text code"><?php echo esc_textarea( $this->array_to_pretty_json( $loc['opening_hours'] ) ); ?></textarea>
+                            <p class="description"><?php echo wp_kses(
+                                __( 'JSON array of <code>OpeningHoursSpecification</code> objects. Example: <code>[{"dayOfWeek":"Monday","opens":"09:00","closes":"17:00"}]</code>', 'yse-agency' ),
+                                [ 'code' => [] ]
+                            ); ?></p>
+                        </td>
+                    </tr>
+
                 </table>
             </div>
         </div>
@@ -1281,15 +1372,208 @@ JS;
     }
 
     /* ================================================================== *
-     *  Schema filter hookup (stub — pass-through only)
+     *  Schema filter hookup
      * ================================================================== */
 
     private function hook_schema_filters(): void {
-        add_filter( 'wpseo_schema_graph', [ $this, 'filter_schema_graph' ], 20, 2 );
+        // Defer filter registration to wp_loaded so all Yoast classes are available.
+        add_action( 'wp_loaded', [ $this, 'maybe_register_schema_filter' ] );
     }
 
+    public function maybe_register_schema_filter(): void {
+        if ( class_exists( '\Yoast\WP\SEO\Generators\Schema\Abstract_Schema_Piece' ) ) {
+            add_filter( 'wpseo_schema_graph', [ $this, 'filter_schema_graph' ], 20, 2 );
+        }
+    }
+
+    /* ================================================================== *
+     *  Multi-location schema output
+     * ================================================================== */
+
     public function filter_schema_graph( $graph, $context ) {
+        if ( ! is_array( $graph ) ) {
+            return $graph;
+        }
+
+        $s = wp_parse_args(
+            (array) get_option( YSE_OPTION_KEY, [] ),
+            $this->default_settings()
+        );
+
+        if ( empty( $s['ml_enabled'] ) ) {
+            return $graph;
+        }
+
+        $locations = is_array( $s['ml_locations'] ) ? $s['ml_locations'] : [];
+        if ( empty( $locations ) ) {
+            return $graph;
+        }
+
+        $org_id = $this->find_org_id( $graph );
+
+        foreach ( $locations as $L ) {
+            if ( ! is_array( $L ) || empty( $L['enabled'] ) ) {
+                continue;
+            }
+            $node = $this->build_location_node( $L, $s, $org_id );
+            if ( null !== $node ) {
+                $graph[] = $node;
+            }
+        }
+
         return $graph;
+    }
+
+    /**
+     * Walk the graph looking for an Organization or LocalBusiness @id.
+     * Falls back to the standard Yoast pattern if none is found.
+     */
+    private function find_org_id( array $graph ): string {
+        foreach ( $graph as $node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            $types = (array) ( $node['@type'] ?? [] );
+            foreach ( $types as $t ) {
+                if ( 'Organization' === $t || 'LocalBusiness' === $t ) {
+                    return (string) ( $node['@id'] ?? '' );
+                }
+            }
+        }
+        return trailingslashit( home_url() ) . '#organization';
+    }
+
+    /**
+     * Build a single LocalBusiness schema node for one location entry.
+     * Returns null when the location has no name (the minimum required field).
+     *
+     * Inheritance rules applied here:
+     *   - telephone  → falls back to global settings telephone
+     *   - email      → falls back to global settings org_email
+     *   - opening_hours / service_area → location value only (no global fallback)
+     *
+     * @param array  $L        A single sanitized location array.
+     * @param array  $settings The full plugin settings array.
+     * @param string $org_id   The @id of the parent organization node.
+     */
+    private function build_location_node( array $L, array $settings, string $org_id ): ?array {
+        $name = trim( (string) ( $L['name'] ?? '' ) );
+        if ( '' === $name ) {
+            return null;
+        }
+
+        // URL: explicit override → page_slug fallback → empty
+        $url = trim( (string) ( $L['url'] ?? '' ) );
+        if ( '' === $url ) {
+            $slug = trim( (string) ( $L['page_slug'] ?? '' ) );
+            if ( '' !== $slug ) {
+                $url = trailingslashit( home_url() ) . ltrim( $slug, '/' );
+            }
+        }
+
+        // @id derived from URL when available; otherwise slug from name
+        $node_id = ( '' !== $url )
+            ? trailingslashit( $url ) . '#localbusiness'
+            : trailingslashit( home_url() ) . '#location-' . sanitize_title( $name );
+
+        // @type — LocalBusiness + up to three optional subtypes
+        $types = [ 'LocalBusiness' ];
+        foreach ( [ 'lb_subtype', 'lb_subtype2', 'lb_subtype3' ] as $key ) {
+            $t = trim( (string) ( $L[ $key ] ?? '' ) );
+            if ( '' !== $t && ! in_array( $t, $types, true ) ) {
+                $types[] = $t;
+            }
+        }
+
+        $node = [
+            '@type' => ( 1 === count( $types ) ) ? $types[0] : $types,
+            '@id'   => $node_id,
+            'name'  => $name,
+        ];
+
+        if ( '' !== $url ) {
+            $node['url'] = $url;
+        }
+
+        // Image and priceRange (location-specific only)
+        $image = trim( (string) ( $L['image'] ?? '' ) );
+        if ( '' !== $image ) {
+            $node['image'] = $image;
+        }
+
+        $price = trim( (string) ( $L['priceRange'] ?? '' ) );
+        if ( '' !== $price ) {
+            $node['priceRange'] = $price;
+        }
+
+        // Telephone — inherit global when location value is absent
+        $phone = trim( (string) ( $L['telephone'] ?? '' ) );
+        if ( '' === $phone ) {
+            $phone = trim( (string) ( $settings['telephone'] ?? '' ) );
+        }
+        if ( '' !== $phone ) {
+            $node['telephone'] = $phone;
+        }
+
+        // Email — inherit global when location value is absent
+        $email = trim( (string) ( $L['email'] ?? '' ) );
+        if ( '' === $email ) {
+            $email = trim( (string) ( $settings['org_email'] ?? '' ) );
+        }
+        if ( '' !== $email ) {
+            $node['email'] = $email;
+        }
+
+        // PostalAddress
+        $addr_parts = array_filter( [
+            'streetAddress'   => trim( (string) ( $L['addr_street']  ?? '' ) ),
+            'addressLocality' => trim( (string) ( $L['addr_city']    ?? '' ) ),
+            'addressRegion'   => trim( (string) ( $L['addr_region']  ?? '' ) ),
+            'postalCode'      => trim( (string) ( $L['addr_postal']  ?? '' ) ),
+            'addressCountry'  => trim( (string) ( $L['addr_country'] ?? '' ) ),
+        ] );
+        if ( ! empty( $addr_parts ) ) {
+            $node['address'] = array_merge( [ '@type' => 'PostalAddress' ], $addr_parts );
+        }
+
+        // GeoCoordinates — only when both lat and lng are present
+        $lat = trim( (string) ( $L['geo_lat'] ?? '' ) );
+        $lng = trim( (string) ( $L['geo_lng'] ?? '' ) );
+        if ( '' !== $lat && '' !== $lng ) {
+            $node['geo'] = [
+                '@type'     => 'GeoCoordinates',
+                'latitude'  => (float) $lat,
+                'longitude' => (float) $lng,
+            ];
+        }
+
+        // Opening hours — location-specific value only
+        $oh = is_array( $L['opening_hours'] ?? null ) ? $L['opening_hours'] : [];
+        if ( ! empty( $oh ) ) {
+            $node['openingHoursSpecification'] = $oh;
+        }
+
+        // Service area — location-specific value only; wrap each string as AdministrativeArea
+        $sa = is_array( $L['service_area'] ?? null ) ? $L['service_area'] : [];
+        if ( ! empty( $sa ) ) {
+            $areas = [];
+            foreach ( $sa as $area ) {
+                $area = trim( (string) $area );
+                if ( '' !== $area ) {
+                    $areas[] = [ '@type' => 'AdministrativeArea', 'name' => $area ];
+                }
+            }
+            if ( ! empty( $areas ) ) {
+                $node['areaServed'] = $areas;
+            }
+        }
+
+        // Link back to parent organization node
+        if ( '' !== $org_id ) {
+            $node['parentOrganization'] = [ '@id' => $org_id ];
+        }
+
+        return $node;
     }
 }
 
