@@ -1382,8 +1382,219 @@ JS;
 
     public function maybe_register_schema_filter(): void {
         if ( class_exists( '\Yoast\WP\SEO\Generators\Schema\Abstract_Schema_Piece' ) ) {
-            add_filter( 'wpseo_schema_graph', [ $this, 'filter_schema_graph' ], 20, 2 );
+            add_filter( 'wpseo_schema_organization', [ $this, 'filter_organization_node' ] );
+            add_filter( 'wpseo_schema_graph',        [ $this, 'filter_schema_graph' ], 20, 2 );
         }
+    }
+
+    /* ================================================================== *
+     *  Organization node enrichment
+     * ================================================================== */
+
+    /**
+     * Enrich (not replace) Yoast's Organization node via wpseo_schema_organization.
+     *
+     * Merge strategy:
+     *   override_org = false (default) — Extender value is written only when the
+     *     Yoast field is absent or effectively empty.
+     *   override_org = true            — Extender value always wins.
+     *
+     * sameAs is always merged + deduplicated regardless of override_org, because
+     * adding social profiles alongside Yoast's is universally correct.
+     */
+    public function filter_organization_node( $node ): array {
+        if ( ! is_array( $node ) ) {
+            $node = [];
+        }
+
+        $s = wp_parse_args(
+            (array) get_option( YSE_OPTION_KEY, [] ),
+            $this->default_settings()
+        );
+
+        $override = ! empty( $s['override_org'] );
+
+        // ---- Scalar fields --------------------------------------------------
+        $scalar_map = [
+            'name'      => (string) ( $s['org_name']  ?? '' ),
+            'url'       => (string) ( $s['org_url']   ?? '' ),
+            'email'     => (string) ( $s['org_email'] ?? '' ),
+            'telephone' => (string) ( $s['telephone'] ?? '' ),
+        ];
+        foreach ( $scalar_map as $prop => $ext_val ) {
+            if ( '' !== $ext_val && ( $override || $this->is_node_field_empty( $node, $prop ) ) ) {
+                $node[ $prop ] = $ext_val;
+            }
+        }
+
+        // ---- Logo -----------------------------------------------------------
+        $ext_logo = trim( (string) ( $s['org_logo'] ?? '' ) );
+        if ( '' !== $ext_logo && ( $override || $this->is_node_field_empty( $node, 'logo' ) ) ) {
+            $node['logo'] = [ '@type' => 'ImageObject', 'url' => $ext_logo ];
+        }
+
+        // ---- sameAs — always merge + deduplicate ----------------------------
+        $node = $this->merge_same_as( $node, is_array( $s['same_as'] ) ? $s['same_as'] : [] );
+
+        // ---- Address --------------------------------------------------------
+        $node = $this->maybe_inject_address( $node, $s, $override );
+
+        // ---- GeoCoordinates -------------------------------------------------
+        $node = $this->maybe_inject_geo( $node, $s, $override );
+
+        // ---- OpeningHoursSpecification --------------------------------------
+        $ext_oh = is_array( $s['opening_hours'] ?? null ) ? $s['opening_hours'] : [];
+        if ( ! empty( $ext_oh ) && ( $override || $this->is_node_field_empty( $node, 'openingHoursSpecification' ) ) ) {
+            $node['openingHoursSpecification'] = $ext_oh;
+        }
+
+        // ---- areaServed — each line becomes a City node ---------------------
+        $node = $this->maybe_inject_area_served( $node, $s, $override );
+
+        // ---- LocalBusiness @type injection ----------------------------------
+        if ( ! empty( $s['is_local'] ) ) {
+            $node = $this->inject_local_business_types( $node, $s );
+        }
+
+        return $node;
+    }
+
+    /**
+     * Returns true when a given key is absent from the node, or its value is
+     * an empty string / empty array.  Treats '0' and numeric zeros as non-empty.
+     */
+    private function is_node_field_empty( array $node, string $key ): bool {
+        if ( ! array_key_exists( $key, $node ) ) {
+            return true;
+        }
+        $val = $node[ $key ];
+        if ( is_array( $val ) ) {
+            return empty( $val );
+        }
+        return '' === $val;
+    }
+
+    /**
+     * Merge Extender sameAs URLs into the node's existing sameAs array.
+     * Deduplicates by exact URL string.  Always runs regardless of override_org
+     * because adding profiles alongside Yoast's is safe by definition.
+     */
+    private function merge_same_as( array $node, array $ext_urls ): array {
+        $existing = [];
+        if ( isset( $node['sameAs'] ) && is_array( $node['sameAs'] ) ) {
+            foreach ( $node['sameAs'] as $url ) {
+                if ( is_string( $url ) && '' !== $url ) {
+                    $existing[] = $url;
+                }
+            }
+        }
+
+        $merged = $existing;
+        foreach ( $ext_urls as $url ) {
+            $url = trim( (string) $url );
+            if ( '' !== $url && ! in_array( $url, $merged, true ) ) {
+                $merged[] = $url;
+            }
+        }
+
+        if ( ! empty( $merged ) ) {
+            $node['sameAs'] = array_values( $merged );
+        }
+
+        return $node;
+    }
+
+    /**
+     * Inject a PostalAddress node when we have at least one non-empty address field.
+     * Does nothing when both Extender has no address data AND override is off.
+     */
+    private function maybe_inject_address( array $node, array $s, bool $override ): array {
+        $ext_parts = array_filter( [
+            'streetAddress'   => trim( (string) ( $s['addr_street']  ?? '' ) ),
+            'addressLocality' => trim( (string) ( $s['addr_city']    ?? '' ) ),
+            'addressRegion'   => trim( (string) ( $s['addr_region']  ?? '' ) ),
+            'postalCode'      => trim( (string) ( $s['addr_postal']  ?? '' ) ),
+            'addressCountry'  => trim( (string) ( $s['addr_country'] ?? '' ) ),
+        ] );
+
+        if ( empty( $ext_parts ) ) {
+            return $node;
+        }
+
+        if ( $override || $this->is_node_field_empty( $node, 'address' ) ) {
+            $node['address'] = array_merge( [ '@type' => 'PostalAddress' ], $ext_parts );
+        }
+
+        return $node;
+    }
+
+    /**
+     * Inject a GeoCoordinates node when both lat and lng are set.
+     */
+    private function maybe_inject_geo( array $node, array $s, bool $override ): array {
+        $lat = trim( (string) ( $s['geo_lat'] ?? '' ) );
+        $lng = trim( (string) ( $s['geo_lng'] ?? '' ) );
+
+        if ( '' === $lat || '' === $lng ) {
+            return $node;
+        }
+
+        if ( $override || $this->is_node_field_empty( $node, 'geo' ) ) {
+            $node['geo'] = [
+                '@type'     => 'GeoCoordinates',
+                'latitude'  => (float) $lat,
+                'longitude' => (float) $lng,
+            ];
+        }
+
+        return $node;
+    }
+
+    /**
+     * Inject areaServed, converting each service_area line to a City node.
+     */
+    private function maybe_inject_area_served( array $node, array $s, bool $override ): array {
+        $sa = is_array( $s['service_area'] ?? null ) ? $s['service_area'] : [];
+        if ( empty( $sa ) ) {
+            return $node;
+        }
+
+        $areas = [];
+        foreach ( $sa as $area ) {
+            $area = trim( (string) $area );
+            if ( '' !== $area ) {
+                $areas[] = [ '@type' => 'City', 'name' => $area ];
+            }
+        }
+
+        if ( ! empty( $areas ) && ( $override || $this->is_node_field_empty( $node, 'areaServed' ) ) ) {
+            $node['areaServed'] = $areas;
+        }
+
+        return $node;
+    }
+
+    /**
+     * Ensure the @type array includes LocalBusiness plus any configured subtypes.
+     * Existing types are preserved; duplicates are removed.
+     */
+    private function inject_local_business_types( array $node, array $s ): array {
+        $types = isset( $node['@type'] ) ? (array) $node['@type'] : [];
+
+        if ( ! in_array( 'LocalBusiness', $types, true ) ) {
+            $types[] = 'LocalBusiness';
+        }
+
+        foreach ( [ 'lb_subtype', 'lb_subtype2', 'lb_subtype3' ] as $key ) {
+            $t = trim( (string) ( $s[ $key ] ?? '' ) );
+            if ( '' !== $t && ! in_array( $t, $types, true ) ) {
+                $types[] = $t;
+            }
+        }
+
+        $node['@type'] = ( 1 === count( $types ) ) ? $types[0] : array_values( $types );
+
+        return $node;
     }
 
     /* ================================================================== *
