@@ -1482,6 +1482,10 @@ JS;
 
     public function maybe_register_schema_filter(): void {
         if ( class_exists( '\Yoast\WP\SEO\Generators\Schema\Abstract_Schema_Piece' ) ) {
+            // wpseo_schema_organization fires only when Yoast's "Site Representation"
+            // is set to "Organization".  If it is set to "Person", this filter never
+            // fires and Organization enrichment is silently skipped — which is correct
+            // behaviour, not a bug.
             add_filter( 'wpseo_schema_organization', [ $this, 'filter_organization_node' ] );
             add_filter( 'wpseo_schema_graph',        [ $this, 'filter_schema_graph' ], 20, 2 );
         }
@@ -1887,6 +1891,9 @@ JS;
             $node['hasPart'] = array_values( $has_part );
             break;
         }
+        // Must unset the by-reference loop variable; without this, the last
+        // $graph element would be aliased to $node and could be overwritten by
+        // any subsequent code that reuses the variable name.
         unset( $node );
 
         return $graph;

@@ -37,13 +37,24 @@
     border-top: 1px solid #f0f0f1;
 }
 .yse-card-body > .yse-section-h2--inner:first-of-type {
-    /* never used in current layout, but keep safe defaults if reordered */
     border-top: 0;
     padding-top: 0;
     margin-top: 18px;
 }
 
-/* ---------- Status table ---------- */
+/* ---------- Status table
+   .yse-status is an alias kept for forward-compat; .yse-status-wrap is
+   what the PHP currently outputs.  Both share these declarations.
+   ------------------------------------------------------------------ */
+.yse-status-wrap,
+.yse-status {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 0 0 22px;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
 .yse-status-title {
     font-size: 13px;
     font-weight: 600;
@@ -51,14 +62,6 @@
     letter-spacing: .04em;
     color: #50575e;
     margin: 0 0 8px;
-}
-.yse-status-wrap {
-    background: #fff;
-    border: 1px solid #c3c4c7;
-    border-radius: 6px;
-    padding: 14px 18px;
-    margin: 0 0 22px;
-    box-shadow: 0 1px 1px rgba(0,0,0,.04);
 }
 .yse-status-table { width: 100%; border-collapse: collapse; }
 .yse-status-table th,
@@ -75,13 +78,24 @@
     color: #1d2327;
 }
 .yse-status-table tbody tr:last-child td { border-bottom: 0; }
+/* small footnote below the table */
+.yse-status-note {
+    margin: 10px 0 0;
+    font-size: 12px;
+    color: #646970;
+    font-style: italic;
+}
 
 .yse-val-yoast     { color: #646970; }
 .yse-val-extender  { color: #1d2327; }
 .yse-val-effective { color: #1d2327; font-weight: 600; }
 .yse-val-empty     { color: #a7aaad; font-style: italic; }
 
-/* ---------- Source badges ---------- */
+/* ---------- Source / status badges
+   Usage:  <span class="yse-badge yse-badge--{variant}">
+   Variants: yoast | extender | merged | good | warn
+   .yse-good / .yse-warn may also be used standalone (no .yse-badge base).
+   ------------------------------------------------------------------ */
 .yse-badge {
     display: inline-block;
     padding: 2px 8px;
@@ -95,8 +109,12 @@
     white-space: nowrap;
 }
 .yse-badge--yoast    { background: #e6f0fa; color: #1d4f8c; border-color: #c5dcf2; }
-.yse-badge--extender { background: #e7f5ec; color: #1d8a4c; border-color: #c2e6cd; }
-.yse-badge--merged   { background: #fff4e0; color: #8a5a1d; border-color: #f2dcb2; }
+.yse-badge--extender,
+.yse-badge--good,
+.yse-good            { background: #e7f5ec; color: #1d8a4c; border-color: #c2e6cd; }
+.yse-badge--merged,
+.yse-badge--warn,
+.yse-warn            { background: #fff4e0; color: #8a5a1d; border-color: #f2dcb2; }
 
 /* ---------- Boxed cards ---------- */
 .yse-card {
@@ -134,7 +152,7 @@
     border-top: 1px solid #f0f0f1;
 }
 
-/* Section divider row inside form-table */
+/* ---------- Section divider row inside form-table ---------- */
 .yse-row-divider th {
     background: #f6f7f7;
     font-size: 11px;
@@ -147,7 +165,7 @@
     border-radius: 4px;
 }
 
-/* LB subtype dropdowns */
+/* ---------- LB subtype dropdowns ---------- */
 .yse-subtype-grid {
     display: flex;
     flex-wrap: wrap;
@@ -210,9 +228,63 @@
 }
 .yse-location-head .button-link { font-size: 12px; }
 .yse-remove-location { color: #b32d2e !important; }
-.yse-location-body { padding: 12px 14px; }
+.yse-location-body  { padding: 12px 14px; }
+/* Tighten the left-hand label column inside location cards */
+.yse-location-body .form-table th { width: 170px; padding-left: 0; }
+/* Two-column inner grid: pair adjacent field rows on wide screens */
+@media (min-width: 960px) {
+    .yse-location-body .form-table {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 24px;
+    }
+    /* Divider rows and textarea rows always span both columns */
+    .yse-location-body .form-table .yse-row-divider,
+    .yse-location-body .form-table tr:has(textarea) {
+        grid-column: 1 / -1;
+    }
+    /* form-table uses <tr> which becomes a grid item — let th/td inline */
+    .yse-location-body .form-table tr  { display: contents; }
+    .yse-location-body .form-table th,
+    .yse-location-body .form-table td  { padding: 6px 0; }
+    .yse-location-body .form-table th  { font-size: 12.5px; font-weight: 500; color: #50575e; }
+}
 
-/* ---------- FAQ rows ---------- */
+/* ---------- Location card textarea fields ---------- */
+.yse-location-body textarea {
+    min-height: 72px;
+    width: 100%;
+    box-sizing: border-box;
+}
+/* JSON fields need a bit more vertical room for readability */
+.yse-location-body textarea.code {
+    min-height: 100px;
+    font-family: Menlo, Consolas, monospace;
+    font-size: 12px;
+    background: #f6f7f7;
+}
+
+/* ---------- FAQ post-type selector ---------- */
+.yse-faq-pt-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    margin-bottom: 4px;
+}
+.yse-faq-pt-list label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: normal;
+    cursor: pointer;
+}
+.yse-faq-pt-list code {
+    font-size: 11px;
+    color: #646970;
+}
+
+/* ---------- FAQ rows (metabox) ---------- */
 #yse-faq-list {
     display: flex;
     flex-direction: column;
@@ -220,12 +292,13 @@
     margin: 8px 0 12px;
 }
 .yse-faq-row {
-    background: #f9f9f9;
+    background: #fff;
     border: 1px solid #dcdcde;
     border-radius: 5px;
-    padding: 12px;
+    padding: 14px;
     display: grid;
-    gap: 8px;
+    gap: 10px;
+    box-shadow: 0 1px 1px rgba(0,0,0,.03);
 }
 .yse-faq-row label {
     display: flex;
@@ -236,15 +309,25 @@
     color: #1d2327;
 }
 .yse-faq-row input[type="text"],
-.yse-faq-row textarea { width: 100%; }
+.yse-faq-row textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+/* Answers need room for multi-line content */
+.yse-faq-row textarea {
+    min-height: 80px;
+    resize: vertical;
+}
 .yse-remove-faq {
     justify-self: end;
     color: #b32d2e !important;
     font-size: 12px;
     text-decoration: none;
 }
+/* FAQ metabox sits inside a white WP postbox — slightly dim the row bg */
+#yse_faq_builder .yse-faq-row { background: #f9f9f9; }
 
-/* ---------- Import / Export panel (outside main card) ---------- */
+/* ---------- Import / Export panel ---------- */
 .yse-ie-panel {
     background: #fff;
     border: 1px solid #c3c4c7;
@@ -259,6 +342,7 @@
     border-bottom: 1px solid #e5e5e5;
     padding-bottom: 10px;
 }
+/* Two-column responsive grid */
 .yse-ie-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -270,22 +354,36 @@
     font-weight: 600;
 }
 .yse-ie-col p.description { margin: 0 0 8px; }
-
 #yse-export-json {
     width: 100%;
-    min-height: 140px;
+    min-height: 160px;
     font-family: Menlo, Consolas, monospace;
     font-size: 12px;
     background: #f6f7f7;
+    resize: vertical;
+    box-sizing: border-box;
 }
 .yse-copy-export { margin-top: 6px; }
+
+/* ---------- JSON / textarea in settings form ---------- */
+#yse-opening-hours,
+#yse-service-area {
+    min-height: 80px;
+    resize: vertical;
+}
+#yse-opening-hours { font-family: Menlo, Consolas, monospace; font-size: 12px; }
 
 /* ---------- Notices ---------- */
 .yse-wrap .notice { margin: 12px 0 18px; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 782px) {
-    .yse-ie-grid { grid-template-columns: 1fr; }
+    .yse-ie-grid            { grid-template-columns: 1fr; }
     .yse-card-body .form-table th { width: auto; padding-bottom: 0; }
-    .yse-location-head { flex-wrap: wrap; }
+    .yse-location-head      { flex-wrap: wrap; }
+    /* Collapse location inner grid back to single column */
+    .yse-location-body .form-table { display: table; }
+    .yse-location-body .form-table tr { display: table-row; }
+    .yse-location-body .form-table th,
+    .yse-location-body .form-table td { display: table-cell; }
 }
