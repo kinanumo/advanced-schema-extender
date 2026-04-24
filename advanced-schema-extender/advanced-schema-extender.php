@@ -1,32 +1,32 @@
 <?php
 /**
- * Plugin Name:       Yoast Schema Extender — Agency Pack
+ * Plugin Name:       Advanced Schema Extender for Yoast
  * Plugin URI:        https://kinanumo.com
- * Description:       Extends Yoast SEO's schema graph with Organization enrichment, multi-location LocalBusiness support, and a per-post FAQ builder. Merges with Yoast — never replaces (unless explicitly overridden).
- * Version:           2.5.6
+ * Description:       Extends your site schema graph with Organization enrichment, multi-location LocalBusiness support, and a per-post FAQ builder.
+ * Version:           3.0.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Kendrick Omar Salting
  * Author URI:        https://kinanumo.com
  * License:           Proprietary
- * Text Domain:       yse-agency
+ * Text Domain:       advanced-schema-extender
  */
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'YSE_VERSION',    '2.5.6' );
-define( 'YSE_FILE',       __FILE__ );
-define( 'YSE_DIR',        plugin_dir_path( __FILE__ ) );
-define( 'YSE_URL',        plugin_dir_url( __FILE__ ) );
-define( 'YSE_OPTION_KEY', 'yse_settings' );
-define( 'YSE_PAGE_SLUG',  'yse-settings' );
+define( 'ASE_VERSION',    '3.0.0' );
+define( 'ASE_FILE',       __FILE__ );
+define( 'ASE_DIR',        plugin_dir_path( __FILE__ ) );
+define( 'ASE_URL',        plugin_dir_url( __FILE__ ) );
+define( 'ASE_OPTION_KEY', 'advanced_schema_extender_settings' );
+define( 'ASE_PAGE_SLUG',  'advanced-schema-extender' );
 
 /**
  * Main plugin singleton.
  */
-final class YSE_Agency_UI {
+final class ASE_Agency_UI {
 
-    private static ?YSE_Agency_UI $instance = null;
+    private static ?ASE_Agency_UI $instance = null;
     private array $pending_subtype_errors = [];
 
     public static function instance(): self {
@@ -40,7 +40,7 @@ final class YSE_Agency_UI {
         add_action( 'admin_menu',            [ $this, 'register_menu' ] );
         add_action( 'admin_init',            [ $this, 'register_settings' ] );
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
-        add_action( 'admin_post_yse_import', [ $this, 'handle_import' ] );
+        add_action( 'admin_post_advanced_schema_extender_import', [ $this, 'handle_import' ] );
         add_action( 'add_meta_boxes',        [ $this, 'register_meta_boxes' ] );
         add_action( 'save_post',             [ $this, 'save_post_meta' ], 10, 2 );
 
@@ -49,7 +49,7 @@ final class YSE_Agency_UI {
 
     private function __clone() {}
     public function __wakeup() {
-        throw new \RuntimeException( 'YSE_Agency_UI cannot be unserialized.' );
+        throw new \RuntimeException( 'ASE_Agency_UI cannot be unserialized.' );
     }
 
     /* ================================================================== *
@@ -58,21 +58,21 @@ final class YSE_Agency_UI {
 
     public function register_menu(): void {
         add_options_page(
-            __( 'Yoast Schema Extender', 'yse-agency' ),
-            __( 'Schema Extender', 'yse-agency' ),
+            __( 'Advanced Schema Extender for Yoast', 'advanced-schema-extender' ),
+            __( 'Schema Extender', 'advanced-schema-extender' ),
             'manage_options',
-            YSE_PAGE_SLUG,
+            ASE_PAGE_SLUG,
             [ $this, 'render_settings_page' ]
         );
     }
 
     /**
-     * Per spec: option_group AND option_name are both YSE_OPTION_KEY.
+     * Per spec: option_group AND option_name are both ASE_OPTION_KEY.
      */
     public function register_settings(): void {
         register_setting(
-            YSE_OPTION_KEY,
-            YSE_OPTION_KEY,
+            ASE_OPTION_KEY,
+            ASE_OPTION_KEY,
             [
                 'type'              => 'array',
                 'sanitize_callback' => [ $this, 'sanitize_settings' ],
@@ -124,7 +124,7 @@ final class YSE_Agency_UI {
      * ================================================================== */
 
     /**
-     * Robust sanitizer for the yse_settings option.
+     * Robust sanitizer for the ase_settings option.
      *
      * - Accepts arrays from the settings form, arrays decoded from JSON imports,
      *   or already-sanitized arrays (re-save without form change).
@@ -138,12 +138,12 @@ final class YSE_Agency_UI {
         $this->pending_subtype_errors = [];
 
         if ( ! is_array( $raw ) ) {
-            $existing = get_option( YSE_OPTION_KEY, $this->default_settings() );
+            $existing = get_option( ASE_OPTION_KEY, $this->default_settings() );
             return is_array( $existing ) ? $existing : $this->default_settings();
         }
 
         // Existing values are the fallback target for fields that fail validation.
-        $existing = get_option( YSE_OPTION_KEY, [] );
+        $existing = get_option( ASE_OPTION_KEY, [] );
         $existing = is_array( $existing ) ? wp_parse_args( $existing, $this->default_settings() ) : $this->default_settings();
 
         $clean = $this->default_settings();
@@ -162,7 +162,7 @@ final class YSE_Agency_UI {
             $raw['opening_hours'] ?? '',
             $existing['opening_hours'] ?? [],
             'opening_hours',
-            __( 'Opening Hours', 'yse-agency' )
+            __( 'Opening Hours', 'advanced-schema-extender' )
         );
 
         // ---- LocalBusiness toggle + subtypes --------------------------------
@@ -171,19 +171,19 @@ final class YSE_Agency_UI {
             $raw['lb_subtype'] ?? '',
             (string) ( $existing['lb_subtype'] ?? '' ),
             'lb_subtype',
-            __( 'LocalBusiness subtype #1', 'yse-agency' )
+            __( 'LocalBusiness subtype #1', 'advanced-schema-extender' )
         );
         $clean['lb_subtype2']  = $this->sanitize_lb_subtype(
             $raw['lb_subtype2'] ?? '',
             (string) ( $existing['lb_subtype2'] ?? '' ),
             'lb_subtype2',
-            __( 'LocalBusiness subtype #2', 'yse-agency' )
+            __( 'LocalBusiness subtype #2', 'advanced-schema-extender' )
         );
         $clean['lb_subtype3']  = $this->sanitize_lb_subtype(
             $raw['lb_subtype3'] ?? '',
             (string) ( $existing['lb_subtype3'] ?? '' ),
             'lb_subtype3',
-            __( 'LocalBusiness subtype #3', 'yse-agency' )
+            __( 'LocalBusiness subtype #3', 'advanced-schema-extender' )
         );
 
         // ---- Address --------------------------------------------------------
@@ -282,11 +282,11 @@ final class YSE_Agency_UI {
         if ( ! is_array( $decoded ) ) {
             $hint = json_last_error_msg();
             add_settings_error(
-                YSE_OPTION_KEY,
-                'yse_json_invalid_' . $field_key,
+                ASE_OPTION_KEY,
+                'ase_json_invalid_' . $field_key,
                 sprintf(
                     /* translators: 1: human label, 2: parser message */
-                    __( '%1$s could not be saved: invalid JSON (%2$s). Expected a JSON array, e.g. <code>[{"key":"value"}]</code>. Your previous value was kept.', 'yse-agency' ),
+                    __( '%1$s could not be saved: invalid JSON (%2$s). Expected a JSON array, e.g. <code>[{"key":"value"}]</code>. Your previous value was kept.', 'advanced-schema-extender' ),
                     esc_html( $human_label ),
                     esc_html( $hint )
                 ),
@@ -370,11 +370,11 @@ final class YSE_Agency_UI {
 
         if ( ! empty( $parts ) ) {
             add_settings_error(
-                YSE_OPTION_KEY,
-                'yse_invalid_lb_subtypes',
+                ASE_OPTION_KEY,
+                'ase_invalid_lb_subtypes',
                 sprintf(
                     /* translators: %s: comma-separated list of invalid subtype fields and values. */
-                    __( 'Some LocalBusiness subtype values could not be saved and previous values were kept: %s', 'yse-agency' ),
+                    __( 'Some LocalBusiness subtype values could not be saved and previous values were kept: %s', 'advanced-schema-extender' ),
                     esc_html( implode( ', ', $parts ) )
                 ),
                 'error'
@@ -422,10 +422,10 @@ final class YSE_Agency_UI {
             $field_prefix .= '_' . sanitize_key( $location_key );
         }
 
-        $location_label = __( 'Location', 'yse-agency' );
+        $location_label = __( 'Location', 'advanced-schema-extender' );
         if ( '' !== $location_key && is_numeric( $location_key ) ) {
             $location_label = sprintf(
-                __( 'Location #%d', 'yse-agency' ),
+                __( 'Location #%d', 'advanced-schema-extender' ),
                 ( (int) $location_key ) + 1
             );
         }
@@ -443,19 +443,19 @@ final class YSE_Agency_UI {
                 $raw['lb_subtype'] ?? '',
                 (string) ( $fallback['lb_subtype'] ?? '' ),
                 $field_prefix . '_lb_subtype',
-                sprintf( __( '%1$s subtype #1', 'yse-agency' ), $location_label )
+                sprintf( __( '%1$s subtype #1', 'advanced-schema-extender' ), $location_label )
             ),
             'lb_subtype2'   => $this->sanitize_lb_subtype(
                 $raw['lb_subtype2'] ?? '',
                 (string) ( $fallback['lb_subtype2'] ?? '' ),
                 $field_prefix . '_lb_subtype2',
-                sprintf( __( '%1$s subtype #2', 'yse-agency' ), $location_label )
+                sprintf( __( '%1$s subtype #2', 'advanced-schema-extender' ), $location_label )
             ),
             'lb_subtype3'   => $this->sanitize_lb_subtype(
                 $raw['lb_subtype3'] ?? '',
                 (string) ( $fallback['lb_subtype3'] ?? '' ),
                 $field_prefix . '_lb_subtype3',
-                sprintf( __( '%1$s subtype #3', 'yse-agency' ), $location_label )
+                sprintf( __( '%1$s subtype #3', 'advanced-schema-extender' ), $location_label )
             ),
             'addr_street'   => sanitize_text_field( (string) ( $raw['addr_street']  ?? '' ) ),
             'addr_city'     => sanitize_text_field( (string) ( $raw['addr_city']    ?? '' ) ),
@@ -469,7 +469,7 @@ final class YSE_Agency_UI {
                 $raw['opening_hours'] ?? '',
                 [],
                 'location_opening_hours',
-                __( 'Location Opening Hours', 'yse-agency' )
+                __( 'Location Opening Hours', 'advanced-schema-extender' )
             ),
         ];
     }
@@ -593,7 +593,7 @@ final class YSE_Agency_UI {
 
     public function enqueue_assets( string $hook ): void {
         $allowed = [
-            'settings_page_' . YSE_PAGE_SLUG,
+            'settings_page_' . ASE_PAGE_SLUG,
             'post.php',
             'post-new.php',
         ];
@@ -601,13 +601,13 @@ final class YSE_Agency_UI {
             return;
         }
 
-        wp_enqueue_style( 'yse-admin', YSE_URL . 'assets/admin.css', [], YSE_VERSION );
+        wp_enqueue_style( 'ase-admin', ASE_URL . 'assets/admin.css', [], ASE_VERSION );
 
         wp_enqueue_media();
 
-        wp_register_script( 'yse-admin', '', [ 'jquery' ], YSE_VERSION, true );
-        wp_enqueue_script( 'yse-admin' );
-        wp_add_inline_script( 'yse-admin', $this->inline_admin_js() );
+        wp_register_script( 'ase-admin', '', [ 'jquery' ], ASE_VERSION, true );
+        wp_enqueue_script( 'ase-admin' );
+        wp_add_inline_script( 'ase-admin', $this->inline_admin_js() );
     }
 
     private function inline_admin_js(): string {
@@ -616,10 +616,10 @@ final class YSE_Agency_UI {
     'use strict';
 
     /* 1. Copy export JSON */
-    $(document).on('click', '.yse-copy-export', function(e){
+    $(document).on('click', '.ase-copy-export', function(e){
         e.preventDefault();
         var $btn  = $(this);
-        var $text = $('#yse-export-json');
+        var $text = $('#ase-export-json');
         if ( ! $text.length ) { return; }
         $text.trigger('select');
         try {
@@ -628,13 +628,13 @@ final class YSE_Agency_UI {
             $btn.text($btn.data('copied') || 'Copied!');
             setTimeout(function(){ $btn.text(orig); }, 1500);
         } catch (err) {
-            window.console && console.warn('YSE copy failed', err);
+            window.console && console.warn('ASE copy failed', err);
         }
     });
 
     /* 2. WP Media — logo picker */
     var logoFrame;
-    $(document).on('click', '.yse-pick-logo', function(e){
+    $(document).on('click', '.ase-pick-logo', function(e){
         e.preventDefault();
         var $btn = $(this);
         if ( logoFrame ) { logoFrame.open(); return; }
@@ -647,49 +647,49 @@ final class YSE_Agency_UI {
         });
         logoFrame.on('select', function(){
             var att = logoFrame.state().get('selection').first().toJSON();
-            $('#yse-logo-url').val(att.url);
-            $('#yse-logo-preview').attr('src', att.url).show();
-            $('.yse-clear-logo').show();
+            $('#ase-logo-url').val(att.url);
+            $('#ase-logo-preview').attr('src', att.url).show();
+            $('.ase-clear-logo').show();
         });
         logoFrame.open();
     });
-    $(document).on('click', '.yse-clear-logo', function(e){
+    $(document).on('click', '.ase-clear-logo', function(e){
         e.preventDefault();
-        $('#yse-logo-url').val('');
-        $('#yse-logo-preview').attr('src', '').hide();
+        $('#ase-logo-url').val('');
+        $('#ase-logo-preview').attr('src', '').hide();
         $(this).hide();
     });
 
     /* 3. Multi-location cards */
-    $(document).on('click', '.yse-add-location', function(e){
+    $(document).on('click', '.ase-add-location', function(e){
         e.preventDefault();
-        var $list = $('#yse-locations-list');
-        var tpl   = $('#yse-location-template').html();
+        var $list = $('#ase-locations-list');
+        var tpl   = $('#ase-location-template').html();
         if ( ! tpl ) { return; }
-        var idx = $list.children('.yse-location-card').length;
+        var idx = $list.children('.ase-location-card').length;
         $list.append( tpl.replace(/__INDEX__/g, idx) );
     });
-    $(document).on('click', '.yse-remove-location', function(e){
+    $(document).on('click', '.ase-remove-location', function(e){
         e.preventDefault();
-        $(this).closest('.yse-location-card').remove();
+        $(this).closest('.ase-location-card').remove();
     });
-    $(document).on('click', '.yse-toggle-location', function(e){
+    $(document).on('click', '.ase-toggle-location', function(e){
         e.preventDefault();
-        $(this).closest('.yse-location-card').toggleClass('is-collapsed');
+        $(this).closest('.ase-location-card').toggleClass('is-collapsed');
     });
 
     /* 4. FAQ rows */
-    $(document).on('click', '.yse-add-faq', function(e){
+    $(document).on('click', '.ase-add-faq', function(e){
         e.preventDefault();
-        var $list = $('#yse-faq-list');
-        var tpl   = $('#yse-faq-template').html();
+        var $list = $('#ase-faq-list');
+        var tpl   = $('#ase-faq-template').html();
         if ( ! tpl ) { return; }
-        var idx = $list.children('.yse-faq-row').length;
+        var idx = $list.children('.ase-faq-row').length;
         $list.append( tpl.replace(/__INDEX__/g, idx) );
     });
-    $(document).on('click', '.yse-remove-faq', function(e){
+    $(document).on('click', '.ase-remove-faq', function(e){
         e.preventDefault();
-        $(this).closest('.yse-faq-row').remove();
+        $(this).closest('.ase-faq-row').remove();
     });
 
 })(jQuery);
@@ -702,58 +702,58 @@ JS;
 
     public function render_settings_page(): void {
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( esc_html__( 'You do not have permission to access this page.', 'yse-agency' ) );
+            wp_die( esc_html__( 'You do not have permission to access this page.', 'advanced-schema-extender' ) );
         }
 
         // Surface post-redirect import status as a settings_error.
-        if ( isset( $_GET['yse_import'] ) ) {
-            $this->register_status_message( sanitize_key( wp_unslash( $_GET['yse_import'] ) ) );
+        if ( isset( $_GET['advanced_schema_extender_import'] ) ) {
+            $this->register_status_message( sanitize_key( wp_unslash( $_GET['advanced_schema_extender_import'] ) ) );
         }
 
         $settings = wp_parse_args(
-            (array) get_option( YSE_OPTION_KEY, [] ),
+            (array) get_option( ASE_OPTION_KEY, [] ),
             $this->default_settings()
         );
         ?>
-        <div class="wrap yse-wrap">
+        <div class="wrap ase-wrap">
             <h1>
-                <?php esc_html_e( 'Yoast Schema Extender — Agency Pack', 'yse-agency' ); ?>
-                <span class="yse-version">v<?php echo esc_html( YSE_VERSION ); ?></span>
+                <?php esc_html_e( 'Advanced Schema Extender for Yoast', 'advanced-schema-extender' ); ?>
+                <span class="ase-version">v<?php echo esc_html( ASE_VERSION ); ?></span>
             </h1>
 
             <?php settings_errors(); ?>
 
             <?php $this->render_status_table( $settings ); ?>
 
-            <h2 class="yse-section-h2"><?php esc_html_e( 'Organization & LocalBusiness', 'yse-agency' ); ?></h2>
+            <h2 class="ase-section-h2"><?php esc_html_e( 'Organization & LocalBusiness', 'advanced-schema-extender' ); ?></h2>
 
             <form method="post" action="options.php">
-                <?php settings_fields( YSE_OPTION_KEY ); ?>
+                <?php settings_fields( ASE_OPTION_KEY ); ?>
 
-                <div class="yse-card">
-                    <div class="yse-card-body">
+                <div class="ase-card">
+                    <div class="ase-card-body">
                         <p class="description">
-                            <?php esc_html_e( 'These fields enrich Yoast’s Organization schema node. Empty fields are skipped — Yoast’s value (if any) passes through untouched. Toggle “Treat as LocalBusiness” to add address, hours, and geo data.', 'yse-agency' ); ?>
+                            <?php esc_html_e( 'These fields enrich your Organization schema node. Empty fields are skipped. Toggle “Treat as LocalBusiness” to add address, hours, and geo data.', 'advanced-schema-extender' ); ?>
                         </p>
 
                         <?php $this->render_org_fields( $settings ); ?>
 
-                        <h2 class="yse-section-h2 yse-section-h2--inner">
-                            <?php esc_html_e( 'Multiple Locations (Optional)', 'yse-agency' ); ?>
+                        <h2 class="ase-section-h2 ase-section-h2--inner">
+                            <?php esc_html_e( 'Multiple Locations (Optional)', 'advanced-schema-extender' ); ?>
                         </h2>
                         <?php $this->render_locations_section( $settings ); ?>
 
-                        <h2 class="yse-section-h2 yse-section-h2--inner">
-                            <?php esc_html_e( 'FAQ Builder (Per-Post)', 'yse-agency' ); ?>
+                        <h2 class="ase-section-h2 ase-section-h2--inner">
+                            <?php esc_html_e( 'FAQ Builder (Per-Post)', 'advanced-schema-extender' ); ?>
                         </h2>
                         <?php $this->render_faq_settings( $settings ); ?>
 
-                        <h2 class="yse-section-h2 yse-section-h2--inner">
-                            <?php esc_html_e( 'Compatibility', 'yse-agency' ); ?>
+                        <h2 class="ase-section-h2 ase-section-h2--inner">
+                            <?php esc_html_e( 'Compatibility', 'advanced-schema-extender' ); ?>
                         </h2>
                         <?php $this->render_compat_fields( $settings ); ?>
 
-                        <?php submit_button( __( 'Save Settings', 'yse-agency' ) ); ?>
+                        <?php submit_button( __( 'Save Settings', 'advanced-schema-extender' ) ); ?>
                     </div>
                 </div>
             </form>
@@ -766,55 +766,53 @@ JS;
     /* ------------------------ Status table ---------------------------- */
 
     /**
-     * Build status rows comparing approximate Yoast/site defaults to Extender values.
+     * Build status rows comparing baseline/site defaults to Extender values.
      *
-     * Yoast values are read directly from the wpseo_titles option and home_url(),
-     * not from Yoast's runtime helpers — that means the table reflects the values
-     * Yoast *would* normally publish if Extender were uninstalled.
+     * Baseline values are read directly from the wpseo_titles option and home_url().
      */
     private function build_status_rows( array $s ): array {
-        $yoast_titles = get_option( 'wpseo_titles', [] );
-        $yoast_titles = is_array( $yoast_titles ) ? $yoast_titles : [];
+        $baseline_titles = get_option( 'wpseo_titles', [] );
+        $baseline_titles = is_array( $baseline_titles ) ? $baseline_titles : [];
 
         $rows = [
             [
-                'label'    => __( 'Organization Name', 'yse-agency' ),
-                'yoast'    => (string) ( $yoast_titles['company_name'] ?? '' ),
+                'label'    => __( 'Organization Name', 'advanced-schema-extender' ),
+                'baseline' => (string) ( $baseline_titles['company_name'] ?? '' ),
                 'extender' => (string) ( $s['org_name'] ?? '' ),
             ],
             [
-                'label'    => __( 'Website URL', 'yse-agency' ),
-                'yoast'    => (string) home_url(),
+                'label'    => __( 'Website URL', 'advanced-schema-extender' ),
+                'baseline' => (string) home_url(),
                 'extender' => (string) ( $s['org_url'] ?? '' ),
             ],
             [
-                'label'    => __( 'Logo', 'yse-agency' ),
-                'yoast'    => (string) ( $yoast_titles['company_logo'] ?? '' ),
+                'label'    => __( 'Logo', 'advanced-schema-extender' ),
+                'baseline' => (string) ( $baseline_titles['company_logo'] ?? '' ),
                 'extender' => (string) ( $s['org_logo'] ?? '' ),
             ],
             [
-                'label'    => __( 'Contact Email', 'yse-agency' ),
-                'yoast'    => '',
+                'label'    => __( 'Contact Email', 'advanced-schema-extender' ),
+                'baseline' => '',
                 'extender' => (string) ( $s['org_email'] ?? '' ),
             ],
             [
-                'label'    => __( 'Telephone', 'yse-agency' ),
-                'yoast'    => '',
+                'label'    => __( 'Telephone', 'advanced-schema-extender' ),
+                'baseline' => '',
                 'extender' => (string) ( $s['telephone'] ?? '' ),
             ],
             [
-                'label'    => __( 'Schema Type', 'yse-agency' ),
-                'yoast'    => __( 'Organization', 'yse-agency' ),
+                'label'    => __( 'Schema Type', 'advanced-schema-extender' ),
+                'baseline' => __( 'Organization', 'advanced-schema-extender' ),
                 'extender' => $this->describe_schema_type( $s ),
             ],
             [
-                'label'    => __( 'Address', 'yse-agency' ),
-                'yoast'    => '',
+                'label'    => __( 'Address', 'advanced-schema-extender' ),
+                'baseline' => '',
                 'extender' => $this->describe_address( $s ),
             ],
             [
-                'label'    => __( 'Additional Locations', 'yse-agency' ),
-                'yoast'    => '',
+                'label'    => __( 'Additional Locations', 'advanced-schema-extender' ),
+                'baseline' => '',
                 'extender' => $this->describe_locations( $s ),
             ],
         ];
@@ -822,11 +820,11 @@ JS;
         $override = ! empty( $s['override_org'] );
 
         foreach ( $rows as &$row ) {
-            $y = trim( (string) $row['yoast'] );
+            $y = trim( (string) $row['baseline'] );
             $e = trim( (string) $row['extender'] );
 
             if ( $override ) {
-                // Replace mode: Yoast is suppressed, Extender is the only voice.
+                // Replace mode: baseline values are suppressed.
                 $row['effective'] = $e;
                 $row['source']    = ( '' !== $e ) ? 'extender' : '';
             } elseif ( '' !== $e && '' !== $y ) {
@@ -837,7 +835,7 @@ JS;
                 $row['source']    = 'extender';
             } elseif ( '' !== $y ) {
                 $row['effective'] = $y;
-                $row['source']    = 'yoast';
+                $row['source']    = 'baseline';
             } else {
                 $row['effective'] = '';
                 $row['source']    = '';
@@ -851,32 +849,32 @@ JS;
     private function render_status_table( array $s ): void {
         $rows = $this->build_status_rows( $s );
         ?>
-        <h2 class="yse-status-title"><?php esc_html_e( 'Current Site Representation Status', 'yse-agency' ); ?></h2>
-        <div class="yse-status-wrap">
-            <table class="yse-status-table">
+        <h2 class="ase-status-title"><?php esc_html_e( 'Current Site Representation Status', 'advanced-schema-extender' ); ?></h2>
+        <div class="ase-status-wrap">
+            <table class="ase-status-table">
                 <thead>
                     <tr>
-                        <th><?php esc_html_e( 'Field',          'yse-agency' ); ?></th>
-                        <th><?php esc_html_e( 'Yoast Value',    'yse-agency' ); ?></th>
-                        <th><?php esc_html_e( 'Extender Value', 'yse-agency' ); ?></th>
-                        <th><?php esc_html_e( 'Effective',      'yse-agency' ); ?></th>
-                        <th><?php esc_html_e( 'Source',         'yse-agency' ); ?></th>
+                        <th><?php esc_html_e( 'Field',          'advanced-schema-extender' ); ?></th>
+                        <th><?php esc_html_e( 'Baseline Value', 'advanced-schema-extender' ); ?></th>
+                        <th><?php esc_html_e( 'Extender Value', 'advanced-schema-extender' ); ?></th>
+                        <th><?php esc_html_e( 'Effective',      'advanced-schema-extender' ); ?></th>
+                        <th><?php esc_html_e( 'Source',         'advanced-schema-extender' ); ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ( $rows as $row ) : ?>
                         <tr>
                             <td><?php echo esc_html( $row['label'] ); ?></td>
-                            <td class="yse-val-yoast"><?php echo $this->cell( $row['yoast'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></td>
-                            <td class="yse-val-extender"><?php echo $this->cell( $row['extender'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></td>
-                            <td class="yse-val-effective"><?php echo $this->cell( $row['effective'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></td>
+                            <td class="ase-val-baseline"><?php echo $this->cell( $row['baseline'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></td>
+                            <td class="ase-val-extender"><?php echo $this->cell( $row['extender'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></td>
+                            <td class="ase-val-effective"><?php echo $this->cell( $row['effective'] ); // phpcs:ignore WordPress.Security.EscapeOutput ?></td>
                             <td><?php $this->render_source_badge( $row['source'] ); ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
-            <p class="yse-status-note">
-                <?php esc_html_e( 'Yoast values shown here are read from saved Yoast settings — they reflect what Yoast would emit if this plugin were inactive.', 'yse-agency' ); ?>
+            <p class="ase-status-note">
+                <?php esc_html_e( 'Baseline values shown here are read from saved SEO plugin settings — they reflect what would be emitted if this plugin were inactive.', 'advanced-schema-extender' ); ?>
             </p>
         </div>
         <?php
@@ -920,12 +918,12 @@ JS;
             return '';
         }
         /* translators: %d: number of additional location nodes */
-        return sprintf( _n( '%d location', '%d locations', $count, 'yse-agency' ), $count );
+        return sprintf( _n( '%d location', '%d locations', $count, 'advanced-schema-extender' ), $count );
     }
 
     private function cell( string $value ): string {
         if ( '' === $value ) {
-            return '<span class="yse-val-empty">—</span>';
+            return '<span class="ase-val-empty">—</span>';
         }
         return esc_html( $this->shorten( $value ) );
     }
@@ -939,16 +937,16 @@ JS;
 
     private function render_source_badge( string $source ): void {
         if ( '' === $source ) {
-            echo '<span class="yse-val-empty">—</span>';
+            echo '<span class="ase-val-empty">—</span>';
             return;
         }
         $labels = [
-            'yoast'    => __( 'Yoast',    'yse-agency' ),
-            'extender' => __( 'Extender', 'yse-agency' ),
-            'merged'   => __( 'Merged',   'yse-agency' ),
+            'baseline' => __( 'Baseline', 'advanced-schema-extender' ),
+            'extender' => __( 'Extender', 'advanced-schema-extender' ),
+            'merged'   => __( 'Merged',   'advanced-schema-extender' ),
         ];
         printf(
-            '<span class="yse-badge yse-badge--%1$s">%2$s</span>',
+            '<span class="ase-badge ase-badge--%1$s">%2$s</span>',
             esc_attr( $source ),
             esc_html( $labels[ $source ] ?? $source )
         );
@@ -960,108 +958,108 @@ JS;
         ?>
         <table class="form-table" role="presentation">
             <tr>
-                <th scope="row"><label for="yse-org-name"><?php esc_html_e( 'Organization Name', 'yse-agency' ); ?></label></th>
-                <td><input id="yse-org-name" type="text" name="<?php echo $this->field_name( 'org_name' ); ?>" value="<?php echo esc_attr( (string) $s['org_name'] ); ?>" class="regular-text" /></td>
+                <th scope="row"><label for="ase-org-name"><?php esc_html_e( 'Organization Name', 'advanced-schema-extender' ); ?></label></th>
+                <td><input id="ase-org-name" type="text" name="<?php echo $this->field_name( 'org_name' ); ?>" value="<?php echo esc_attr( (string) $s['org_name'] ); ?>" class="regular-text" /></td>
             </tr>
             <tr>
-                <th scope="row"><label for="yse-org-url"><?php esc_html_e( 'Organization URL', 'yse-agency' ); ?></label></th>
-                <td><input id="yse-org-url" type="url" name="<?php echo $this->field_name( 'org_url' ); ?>" value="<?php echo esc_attr( (string) $s['org_url'] ); ?>" class="regular-text" placeholder="https://example.com" /></td>
+                <th scope="row"><label for="ase-org-url"><?php esc_html_e( 'Organization URL', 'advanced-schema-extender' ); ?></label></th>
+                <td><input id="ase-org-url" type="url" name="<?php echo $this->field_name( 'org_url' ); ?>" value="<?php echo esc_attr( (string) $s['org_url'] ); ?>" class="regular-text" placeholder="https://example.com" /></td>
             </tr>
             <tr>
-                <th scope="row"><?php esc_html_e( 'Organization Logo', 'yse-agency' ); ?></th>
+                <th scope="row"><?php esc_html_e( 'Organization Logo', 'advanced-schema-extender' ); ?></th>
                 <td>
-                    <div class="yse-logo-picker">
-                        <img id="yse-logo-preview" src="<?php echo esc_url( (string) $s['org_logo'] ); ?>" alt="" style="<?php echo $s['org_logo'] !== '' ? '' : 'display:none;'; ?>" />
+                    <div class="ase-logo-picker">
+                        <img id="ase-logo-preview" src="<?php echo esc_url( (string) $s['org_logo'] ); ?>" alt="" style="<?php echo $s['org_logo'] !== '' ? '' : 'display:none;'; ?>" />
                         <div>
-                            <input id="yse-logo-url" type="url" name="<?php echo $this->field_name( 'org_logo' ); ?>" value="<?php echo esc_attr( (string) $s['org_logo'] ); ?>" class="regular-text" />
+                            <input id="ase-logo-url" type="url" name="<?php echo $this->field_name( 'org_logo' ); ?>" value="<?php echo esc_attr( (string) $s['org_logo'] ); ?>" class="regular-text" />
                             <p>
-                                <button type="button" class="button yse-pick-logo"><?php esc_html_e( 'Select / Upload Logo', 'yse-agency' ); ?></button>
-                                <a href="#" class="yse-clear-logo" style="<?php echo $s['org_logo'] !== '' ? '' : 'display:none;'; ?>"><?php esc_html_e( 'Remove', 'yse-agency' ); ?></a>
+                                <button type="button" class="button ase-pick-logo"><?php esc_html_e( 'Select / Upload Logo', 'advanced-schema-extender' ); ?></button>
+                                <a href="#" class="ase-clear-logo" style="<?php echo $s['org_logo'] !== '' ? '' : 'display:none;'; ?>"><?php esc_html_e( 'Remove', 'advanced-schema-extender' ); ?></a>
                             </p>
                         </div>
                     </div>
                 </td>
             </tr>
             <tr>
-                <th scope="row"><label for="yse-org-email"><?php esc_html_e( 'Contact Email', 'yse-agency' ); ?></label></th>
-                <td><input id="yse-org-email" type="email" name="<?php echo $this->field_name( 'org_email' ); ?>" value="<?php echo esc_attr( (string) $s['org_email'] ); ?>" class="regular-text" /></td>
+                <th scope="row"><label for="ase-org-email"><?php esc_html_e( 'Contact Email', 'advanced-schema-extender' ); ?></label></th>
+                <td><input id="ase-org-email" type="email" name="<?php echo $this->field_name( 'org_email' ); ?>" value="<?php echo esc_attr( (string) $s['org_email'] ); ?>" class="regular-text" /></td>
             </tr>
             <tr>
-                <th scope="row"><label for="yse-telephone"><?php esc_html_e( 'Telephone', 'yse-agency' ); ?></label></th>
-                <td><input id="yse-telephone" type="text" name="<?php echo $this->field_name( 'telephone' ); ?>" value="<?php echo esc_attr( (string) $s['telephone'] ); ?>" class="regular-text" placeholder="+1 555 123 4567" /></td>
+                <th scope="row"><label for="ase-telephone"><?php esc_html_e( 'Telephone', 'advanced-schema-extender' ); ?></label></th>
+                <td><input id="ase-telephone" type="text" name="<?php echo $this->field_name( 'telephone' ); ?>" value="<?php echo esc_attr( (string) $s['telephone'] ); ?>" class="regular-text" placeholder="+1 555 123 4567" /></td>
             </tr>
             <tr>
-                <th scope="row"><label for="yse-same-as"><?php esc_html_e( 'sameAs URLs', 'yse-agency' ); ?></label></th>
+                <th scope="row"><label for="ase-same-as"><?php esc_html_e( 'sameAs URLs', 'advanced-schema-extender' ); ?></label></th>
                 <td>
-                    <textarea id="yse-same-as" name="<?php echo $this->field_name( 'same_as' ); ?>" rows="5" class="large-text code"><?php echo esc_textarea( $this->lines_to_text( $s['same_as'] ) ); ?></textarea>
-                    <p class="description"><?php esc_html_e( 'One URL per line. Social profiles, Wikipedia, Crunchbase, etc.', 'yse-agency' ); ?></p>
+                    <textarea id="ase-same-as" name="<?php echo $this->field_name( 'same_as' ); ?>" rows="5" class="large-text code"><?php echo esc_textarea( $this->lines_to_text( $s['same_as'] ) ); ?></textarea>
+                    <p class="description"><?php esc_html_e( 'One URL per line. Social profiles, Wikipedia, Crunchbase, etc.', 'advanced-schema-extender' ); ?></p>
                 </td>
             </tr>
 
-            <tr class="yse-row-divider"><th colspan="2"><?php esc_html_e( 'LocalBusiness (optional)', 'yse-agency' ); ?></th></tr>
+            <tr class="ase-row-divider"><th colspan="2"><?php esc_html_e( 'LocalBusiness (optional)', 'advanced-schema-extender' ); ?></th></tr>
 
             <tr>
-                <th scope="row"><?php esc_html_e( 'Treat as LocalBusiness', 'yse-agency' ); ?></th>
+                <th scope="row"><?php esc_html_e( 'Treat as LocalBusiness', 'advanced-schema-extender' ); ?></th>
                 <td>
                     <label>
                         <input type="checkbox" name="<?php echo $this->field_name( 'is_local' ); ?>" value="1" <?php checked( ! empty( $s['is_local'] ) ); ?> />
-                        <?php esc_html_e( 'Add LocalBusiness type, address, hours, and geo to the Organization node.', 'yse-agency' ); ?>
+                        <?php esc_html_e( 'Add LocalBusiness type, address, hours, and geo to the Organization node.', 'advanced-schema-extender' ); ?>
                     </label>
                 </td>
             </tr>
             <tr>
-                <th scope="row"><?php esc_html_e( 'LocalBusiness Subtypes', 'yse-agency' ); ?></th>
+                <th scope="row"><?php esc_html_e( 'LocalBusiness Subtypes', 'advanced-schema-extender' ); ?></th>
                 <td>
-                    <div class="yse-subtype-grid">
+                    <div class="ase-subtype-grid">
                         <?php $this->render_subtype_select( [ 'lb_subtype'  ], (string) $s['lb_subtype']  ); ?>
                         <?php $this->render_subtype_select( [ 'lb_subtype2' ], (string) $s['lb_subtype2'] ); ?>
                         <?php $this->render_subtype_select( [ 'lb_subtype3' ], (string) $s['lb_subtype3'] ); ?>
                     </div>
-                    <p class="description"><?php esc_html_e( 'Up to three Schema.org LocalBusiness subtypes. Most businesses only need the first.', 'yse-agency' ); ?></p>
+                    <p class="description"><?php esc_html_e( 'Up to three Schema.org LocalBusiness subtypes. Most businesses only need the first.', 'advanced-schema-extender' ); ?></p>
                 </td>
             </tr>
             <tr>
-                <th scope="row"><label for="yse-addr-street"><?php esc_html_e( 'Street Address', 'yse-agency' ); ?></label></th>
-                <td><input id="yse-addr-street" type="text" name="<?php echo $this->field_name( 'addr_street' ); ?>" value="<?php echo esc_attr( (string) $s['addr_street'] ); ?>" class="regular-text" /></td>
+                <th scope="row"><label for="ase-addr-street"><?php esc_html_e( 'Street Address', 'advanced-schema-extender' ); ?></label></th>
+                <td><input id="ase-addr-street" type="text" name="<?php echo $this->field_name( 'addr_street' ); ?>" value="<?php echo esc_attr( (string) $s['addr_street'] ); ?>" class="regular-text" /></td>
             </tr>
             <tr>
-                <th scope="row"><label for="yse-addr-city"><?php esc_html_e( 'City', 'yse-agency' ); ?></label></th>
-                <td><input id="yse-addr-city" type="text" name="<?php echo $this->field_name( 'addr_city' ); ?>" value="<?php echo esc_attr( (string) $s['addr_city'] ); ?>" class="regular-text" /></td>
+                <th scope="row"><label for="ase-addr-city"><?php esc_html_e( 'City', 'advanced-schema-extender' ); ?></label></th>
+                <td><input id="ase-addr-city" type="text" name="<?php echo $this->field_name( 'addr_city' ); ?>" value="<?php echo esc_attr( (string) $s['addr_city'] ); ?>" class="regular-text" /></td>
             </tr>
             <tr>
-                <th scope="row"><label for="yse-addr-region"><?php esc_html_e( 'State / Region', 'yse-agency' ); ?></label></th>
-                <td><input id="yse-addr-region" type="text" name="<?php echo $this->field_name( 'addr_region' ); ?>" value="<?php echo esc_attr( (string) $s['addr_region'] ); ?>" class="regular-text" /></td>
+                <th scope="row"><label for="ase-addr-region"><?php esc_html_e( 'State / Region', 'advanced-schema-extender' ); ?></label></th>
+                <td><input id="ase-addr-region" type="text" name="<?php echo $this->field_name( 'addr_region' ); ?>" value="<?php echo esc_attr( (string) $s['addr_region'] ); ?>" class="regular-text" /></td>
             </tr>
             <tr>
-                <th scope="row"><label for="yse-addr-postal"><?php esc_html_e( 'Postal Code', 'yse-agency' ); ?></label></th>
-                <td><input id="yse-addr-postal" type="text" name="<?php echo $this->field_name( 'addr_postal' ); ?>" value="<?php echo esc_attr( (string) $s['addr_postal'] ); ?>" class="regular-text" /></td>
+                <th scope="row"><label for="ase-addr-postal"><?php esc_html_e( 'Postal Code', 'advanced-schema-extender' ); ?></label></th>
+                <td><input id="ase-addr-postal" type="text" name="<?php echo $this->field_name( 'addr_postal' ); ?>" value="<?php echo esc_attr( (string) $s['addr_postal'] ); ?>" class="regular-text" /></td>
             </tr>
             <tr>
-                <th scope="row"><label for="yse-addr-country"><?php esc_html_e( 'Country', 'yse-agency' ); ?></label></th>
-                <td><input id="yse-addr-country" type="text" name="<?php echo $this->field_name( 'addr_country' ); ?>" value="<?php echo esc_attr( (string) $s['addr_country'] ); ?>" class="regular-text" placeholder="US, GB, AU…" /></td>
+                <th scope="row"><label for="ase-addr-country"><?php esc_html_e( 'Country', 'advanced-schema-extender' ); ?></label></th>
+                <td><input id="ase-addr-country" type="text" name="<?php echo $this->field_name( 'addr_country' ); ?>" value="<?php echo esc_attr( (string) $s['addr_country'] ); ?>" class="regular-text" placeholder="US, GB, AU…" /></td>
             </tr>
             <tr>
-                <th scope="row"><label for="yse-geo-lat"><?php esc_html_e( 'Latitude / Longitude', 'yse-agency' ); ?></label></th>
+                <th scope="row"><label for="ase-geo-lat"><?php esc_html_e( 'Latitude / Longitude', 'advanced-schema-extender' ); ?></label></th>
                 <td>
-                    <input id="yse-geo-lat" type="text" name="<?php echo $this->field_name( 'geo_lat' ); ?>" value="<?php echo esc_attr( (string) $s['geo_lat'] ); ?>" class="small-text" placeholder="<?php esc_attr_e( 'Latitude', 'yse-agency' ); ?>" />
-                    <input id="yse-geo-lng" type="text" name="<?php echo $this->field_name( 'geo_lng' ); ?>" value="<?php echo esc_attr( (string) $s['geo_lng'] ); ?>" class="small-text" placeholder="<?php esc_attr_e( 'Longitude', 'yse-agency' ); ?>" />
+                    <input id="ase-geo-lat" type="text" name="<?php echo $this->field_name( 'geo_lat' ); ?>" value="<?php echo esc_attr( (string) $s['geo_lat'] ); ?>" class="small-text" placeholder="<?php esc_attr_e( 'Latitude', 'advanced-schema-extender' ); ?>" />
+                    <input id="ase-geo-lng" type="text" name="<?php echo $this->field_name( 'geo_lng' ); ?>" value="<?php echo esc_attr( (string) $s['geo_lng'] ); ?>" class="small-text" placeholder="<?php esc_attr_e( 'Longitude', 'advanced-schema-extender' ); ?>" />
                 </td>
             </tr>
             <tr>
-                <th scope="row"><label for="yse-opening-hours"><?php esc_html_e( 'Opening Hours (JSON)', 'yse-agency' ); ?></label></th>
+                <th scope="row"><label for="ase-opening-hours"><?php esc_html_e( 'Opening Hours (JSON)', 'advanced-schema-extender' ); ?></label></th>
                 <td>
-                    <textarea id="yse-opening-hours" name="<?php echo $this->field_name( 'opening_hours' ); ?>" rows="6" class="large-text code"><?php echo esc_textarea( $this->array_to_pretty_json( $s['opening_hours'] ) ); ?></textarea>
+                    <textarea id="ase-opening-hours" name="<?php echo $this->field_name( 'opening_hours' ); ?>" rows="6" class="large-text code"><?php echo esc_textarea( $this->array_to_pretty_json( $s['opening_hours'] ) ); ?></textarea>
                     <p class="description"><?php echo wp_kses(
-                        __( 'JSON array of <code>OpeningHoursSpecification</code> objects. Example: <code>[{"dayOfWeek":"Monday","opens":"09:00","closes":"17:00"}]</code>', 'yse-agency' ),
+                        __( 'JSON array of <code>OpeningHoursSpecification</code> objects. Example: <code>[{"dayOfWeek":"Monday","opens":"09:00","closes":"17:00"}]</code>', 'advanced-schema-extender' ),
                         [ 'code' => [] ]
                     ); ?></p>
                 </td>
             </tr>
             <tr>
-                <th scope="row"><label for="yse-service-area"><?php esc_html_e( 'Service Area', 'yse-agency' ); ?></label></th>
+                <th scope="row"><label for="ase-service-area"><?php esc_html_e( 'Service Area', 'advanced-schema-extender' ); ?></label></th>
                 <td>
-                    <textarea id="yse-service-area" name="<?php echo $this->field_name( 'service_area' ); ?>" rows="4" class="large-text"><?php echo esc_textarea( $this->lines_to_text( $s['service_area'] ) ); ?></textarea>
-                    <p class="description"><?php esc_html_e( 'One city or region per line.', 'yse-agency' ); ?></p>
+                    <textarea id="ase-service-area" name="<?php echo $this->field_name( 'service_area' ); ?>" rows="4" class="large-text"><?php echo esc_textarea( $this->lines_to_text( $s['service_area'] ) ); ?></textarea>
+                    <p class="description"><?php esc_html_e( 'One city or region per line.', 'advanced-schema-extender' ); ?></p>
                 </td>
             </tr>
         </table>
@@ -1075,7 +1073,7 @@ JS;
     private function render_subtype_select( array $path, string $current ): void {
         ?>
         <select name="<?php echo $this->field_name( ...$path ); ?>">
-            <option value=""><?php esc_html_e( '— None —', 'yse-agency' ); ?></option>
+            <option value=""><?php esc_html_e( '— None —', 'advanced-schema-extender' ); ?></option>
             <?php foreach ( $this->lb_subtypes() as $value => $label ) : ?>
                 <option value="<?php echo esc_attr( $value ); ?>" <?php selected( $current, $value ); ?>><?php echo esc_html( $label ); ?></option>
             <?php endforeach; ?>
@@ -1090,29 +1088,29 @@ JS;
         ?>
         <table class="form-table" role="presentation">
             <tr>
-                <th scope="row"><?php esc_html_e( 'Multi-Location', 'yse-agency' ); ?></th>
+                <th scope="row"><?php esc_html_e( 'Multi-Location', 'advanced-schema-extender' ); ?></th>
                 <td>
                     <label>
                         <input type="checkbox" name="<?php echo $this->field_name( 'ml_enabled' ); ?>" value="1" <?php checked( ! empty( $s['ml_enabled'] ) ); ?> />
-                        <?php esc_html_e( 'Emit each enabled location below as its own LocalBusiness node in the schema graph.', 'yse-agency' ); ?>
+                        <?php esc_html_e( 'Emit each enabled location below as its own LocalBusiness node in the schema graph.', 'advanced-schema-extender' ); ?>
                     </label>
                 </td>
             </tr>
         </table>
 
-        <div id="yse-locations-list">
+        <div id="ase-locations-list">
             <?php foreach ( $locations as $i => $loc ) : ?>
                 <?php $this->render_location_card( (string) $i, (array) $loc ); ?>
             <?php endforeach; ?>
         </div>
 
         <p>
-            <button type="button" class="button yse-add-location">
-                <?php esc_html_e( '+ Add Location', 'yse-agency' ); ?>
+            <button type="button" class="button ase-add-location">
+                <?php esc_html_e( '+ Add Location', 'advanced-schema-extender' ); ?>
             </button>
         </p>
 
-        <script type="text/template" id="yse-location-template"><?php
+        <script type="text/template" id="ase-location-template"><?php
             $this->render_location_card( '__INDEX__', $this->blank_location() );
         ?></script>
         <?php
@@ -1120,67 +1118,67 @@ JS;
 
     private function render_location_card( string $idx, array $loc ): void {
         $loc   = wp_parse_args( $loc, $this->blank_location() );
-        $title = $loc['name'] !== '' ? $loc['name'] : __( 'New Location', 'yse-agency' );
+        $title = $loc['name'] !== '' ? $loc['name'] : __( 'New Location', 'advanced-schema-extender' );
         ?>
-        <div class="yse-location-card">
-            <div class="yse-location-head">
-                <span class="yse-location-title"><?php echo esc_html( $title ); ?></span>
-                <label class="yse-location-enabled">
+        <div class="ase-location-card">
+            <div class="ase-location-head">
+                <span class="ase-location-title"><?php echo esc_html( $title ); ?></span>
+                <label class="ase-location-enabled">
                     <input type="checkbox" name="<?php echo $this->field_name( 'ml_locations', $idx, 'enabled' ); ?>" value="1" <?php checked( ! empty( $loc['enabled'] ) ); ?> />
-                    <?php esc_html_e( 'Enabled', 'yse-agency' ); ?>
+                    <?php esc_html_e( 'Enabled', 'advanced-schema-extender' ); ?>
                 </label>
-                <button type="button" class="button-link yse-toggle-location"><?php esc_html_e( 'Collapse', 'yse-agency' ); ?></button>
-                <button type="button" class="button-link yse-remove-location"><?php esc_html_e( 'Remove', 'yse-agency' ); ?></button>
+                <button type="button" class="button-link ase-toggle-location"><?php esc_html_e( 'Collapse', 'advanced-schema-extender' ); ?></button>
+                <button type="button" class="button-link ase-remove-location"><?php esc_html_e( 'Remove', 'advanced-schema-extender' ); ?></button>
             </div>
-            <div class="yse-location-body">
+            <div class="ase-location-body">
                 <table class="form-table" role="presentation">
 
-                    <tr class="yse-row-divider"><th colspan="2"><?php esc_html_e( 'Identity', 'yse-agency' ); ?></th></tr>
+                    <tr class="ase-row-divider"><th colspan="2"><?php esc_html_e( 'Identity', 'advanced-schema-extender' ); ?></th></tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'Name', 'yse-agency' ); ?></th>
+                        <th scope="row"><?php esc_html_e( 'Name', 'advanced-schema-extender' ); ?></th>
                         <td><input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'name' ); ?>" value="<?php echo esc_attr( (string) $loc['name'] ); ?>" class="regular-text" /></td>
                     </tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'Page Slug', 'yse-agency' ); ?></th>
+                        <th scope="row"><?php esc_html_e( 'Page Slug', 'advanced-schema-extender' ); ?></th>
                         <td>
                             <input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'page_slug' ); ?>" value="<?php echo esc_attr( (string) $loc['page_slug'] ); ?>" class="regular-text" placeholder="locations/downtown" />
-                            <p class="description"><?php esc_html_e( 'Used to build a fallback URL when Location URL is empty.', 'yse-agency' ); ?></p>
+                            <p class="description"><?php esc_html_e( 'Used to build a fallback URL when Location URL is empty.', 'advanced-schema-extender' ); ?></p>
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'Location URL', 'yse-agency' ); ?></th>
+                        <th scope="row"><?php esc_html_e( 'Location URL', 'advanced-schema-extender' ); ?></th>
                         <td><input type="url" name="<?php echo $this->field_name( 'ml_locations', $idx, 'url' ); ?>" value="<?php echo esc_attr( (string) $loc['url'] ); ?>" class="regular-text" placeholder="https://example.com/location/" /></td>
                     </tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'Image URL', 'yse-agency' ); ?></th>
+                        <th scope="row"><?php esc_html_e( 'Image URL', 'advanced-schema-extender' ); ?></th>
                         <td><input type="url" name="<?php echo $this->field_name( 'ml_locations', $idx, 'image' ); ?>" value="<?php echo esc_attr( (string) $loc['image'] ); ?>" class="regular-text" placeholder="https://example.com/location-photo.jpg" /></td>
                     </tr>
 
-                    <tr class="yse-row-divider"><th colspan="2"><?php esc_html_e( 'Contact', 'yse-agency' ); ?></th></tr>
+                    <tr class="ase-row-divider"><th colspan="2"><?php esc_html_e( 'Contact', 'advanced-schema-extender' ); ?></th></tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'Telephone', 'yse-agency' ); ?></th>
+                        <th scope="row"><?php esc_html_e( 'Telephone', 'advanced-schema-extender' ); ?></th>
                         <td>
                             <input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'telephone' ); ?>" value="<?php echo esc_attr( (string) $loc['telephone'] ); ?>" class="regular-text" placeholder="+1 555 123 4567" />
-                            <p class="description"><?php esc_html_e( 'Inherits global telephone if empty.', 'yse-agency' ); ?></p>
+                            <p class="description"><?php esc_html_e( 'Inherits global telephone if empty.', 'advanced-schema-extender' ); ?></p>
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'Email', 'yse-agency' ); ?></th>
+                        <th scope="row"><?php esc_html_e( 'Email', 'advanced-schema-extender' ); ?></th>
                         <td>
                             <input type="email" name="<?php echo $this->field_name( 'ml_locations', $idx, 'email' ); ?>" value="<?php echo esc_attr( (string) $loc['email'] ); ?>" class="regular-text" />
-                            <p class="description"><?php esc_html_e( 'Inherits global contact email if empty.', 'yse-agency' ); ?></p>
+                            <p class="description"><?php esc_html_e( 'Inherits global contact email if empty.', 'advanced-schema-extender' ); ?></p>
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'Price Range', 'yse-agency' ); ?></th>
+                        <th scope="row"><?php esc_html_e( 'Price Range', 'advanced-schema-extender' ); ?></th>
                         <td><input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'priceRange' ); ?>" value="<?php echo esc_attr( (string) $loc['priceRange'] ); ?>" class="small-text" placeholder="$$" /></td>
                     </tr>
 
-                    <tr class="yse-row-divider"><th colspan="2"><?php esc_html_e( 'Schema Type', 'yse-agency' ); ?></th></tr>
+                    <tr class="ase-row-divider"><th colspan="2"><?php esc_html_e( 'Schema Type', 'advanced-schema-extender' ); ?></th></tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'LocalBusiness Subtypes', 'yse-agency' ); ?></th>
+                        <th scope="row"><?php esc_html_e( 'LocalBusiness Subtypes', 'advanced-schema-extender' ); ?></th>
                         <td>
-                            <div class="yse-subtype-grid">
+                            <div class="ase-subtype-grid">
                                 <?php $this->render_subtype_select( [ 'ml_locations', $idx, 'lb_subtype'  ], (string) $loc['lb_subtype']  ); ?>
                                 <?php $this->render_subtype_select( [ 'ml_locations', $idx, 'lb_subtype2' ], (string) $loc['lb_subtype2'] ); ?>
                                 <?php $this->render_subtype_select( [ 'ml_locations', $idx, 'lb_subtype3' ], (string) $loc['lb_subtype3'] ); ?>
@@ -1188,49 +1186,49 @@ JS;
                         </td>
                     </tr>
 
-                    <tr class="yse-row-divider"><th colspan="2"><?php esc_html_e( 'Address', 'yse-agency' ); ?></th></tr>
+                    <tr class="ase-row-divider"><th colspan="2"><?php esc_html_e( 'Address', 'advanced-schema-extender' ); ?></th></tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'Street Address', 'yse-agency' ); ?></th>
+                        <th scope="row"><?php esc_html_e( 'Street Address', 'advanced-schema-extender' ); ?></th>
                         <td><input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'addr_street' ); ?>" value="<?php echo esc_attr( (string) $loc['addr_street'] ); ?>" class="regular-text" /></td>
                     </tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'City', 'yse-agency' ); ?></th>
+                        <th scope="row"><?php esc_html_e( 'City', 'advanced-schema-extender' ); ?></th>
                         <td><input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'addr_city' ); ?>" value="<?php echo esc_attr( (string) $loc['addr_city'] ); ?>" class="regular-text" /></td>
                     </tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'State / Region', 'yse-agency' ); ?></th>
+                        <th scope="row"><?php esc_html_e( 'State / Region', 'advanced-schema-extender' ); ?></th>
                         <td><input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'addr_region' ); ?>" value="<?php echo esc_attr( (string) $loc['addr_region'] ); ?>" class="regular-text" /></td>
                     </tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'Postal Code', 'yse-agency' ); ?></th>
+                        <th scope="row"><?php esc_html_e( 'Postal Code', 'advanced-schema-extender' ); ?></th>
                         <td><input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'addr_postal' ); ?>" value="<?php echo esc_attr( (string) $loc['addr_postal'] ); ?>" class="regular-text" /></td>
                     </tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'Country', 'yse-agency' ); ?></th>
+                        <th scope="row"><?php esc_html_e( 'Country', 'advanced-schema-extender' ); ?></th>
                         <td><input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'addr_country' ); ?>" value="<?php echo esc_attr( (string) $loc['addr_country'] ); ?>" class="regular-text" placeholder="US, GB, AU…" /></td>
                     </tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'Latitude / Longitude', 'yse-agency' ); ?></th>
+                        <th scope="row"><?php esc_html_e( 'Latitude / Longitude', 'advanced-schema-extender' ); ?></th>
                         <td>
-                            <input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'geo_lat' ); ?>" value="<?php echo esc_attr( (string) $loc['geo_lat'] ); ?>" class="small-text" placeholder="<?php esc_attr_e( 'Latitude',  'yse-agency' ); ?>" />
-                            <input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'geo_lng' ); ?>" value="<?php echo esc_attr( (string) $loc['geo_lng'] ); ?>" class="small-text" placeholder="<?php esc_attr_e( 'Longitude', 'yse-agency' ); ?>" />
+                            <input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'geo_lat' ); ?>" value="<?php echo esc_attr( (string) $loc['geo_lat'] ); ?>" class="small-text" placeholder="<?php esc_attr_e( 'Latitude',  'advanced-schema-extender' ); ?>" />
+                            <input type="text" name="<?php echo $this->field_name( 'ml_locations', $idx, 'geo_lng' ); ?>" value="<?php echo esc_attr( (string) $loc['geo_lng'] ); ?>" class="small-text" placeholder="<?php esc_attr_e( 'Longitude', 'advanced-schema-extender' ); ?>" />
                         </td>
                     </tr>
 
-                    <tr class="yse-row-divider"><th colspan="2"><?php esc_html_e( 'Service Area &amp; Hours', 'yse-agency' ); ?></th></tr>
+                    <tr class="ase-row-divider"><th colspan="2"><?php esc_html_e( 'Service Area &amp; Hours', 'advanced-schema-extender' ); ?></th></tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'Service Area', 'yse-agency' ); ?></th>
+                        <th scope="row"><?php esc_html_e( 'Service Area', 'advanced-schema-extender' ); ?></th>
                         <td>
                             <textarea name="<?php echo $this->field_name( 'ml_locations', $idx, 'service_area' ); ?>" rows="3" class="large-text"><?php echo esc_textarea( $this->lines_to_text( $loc['service_area'] ) ); ?></textarea>
-                            <p class="description"><?php esc_html_e( 'One city or region per line.', 'yse-agency' ); ?></p>
+                            <p class="description"><?php esc_html_e( 'One city or region per line.', 'advanced-schema-extender' ); ?></p>
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row"><?php esc_html_e( 'Opening Hours (JSON)', 'yse-agency' ); ?></th>
+                        <th scope="row"><?php esc_html_e( 'Opening Hours (JSON)', 'advanced-schema-extender' ); ?></th>
                         <td>
                             <textarea name="<?php echo $this->field_name( 'ml_locations', $idx, 'opening_hours' ); ?>" rows="4" class="large-text code"><?php echo esc_textarea( $this->array_to_pretty_json( $loc['opening_hours'] ) ); ?></textarea>
                             <p class="description"><?php echo wp_kses(
-                                __( 'JSON array of <code>OpeningHoursSpecification</code> objects. Example: <code>[{"dayOfWeek":"Monday","opens":"09:00","closes":"17:00"}]</code>', 'yse-agency' ),
+                                __( 'JSON array of <code>OpeningHoursSpecification</code> objects. Example: <code>[{"dayOfWeek":"Monday","opens":"09:00","closes":"17:00"}]</code>', 'advanced-schema-extender' ),
                                 [ 'code' => [] ]
                             ); ?></p>
                         </td>
@@ -1249,13 +1247,13 @@ JS;
         $types    = get_post_types( [ 'public' => true ], 'objects' );
         ?>
         <p class="description">
-            <?php esc_html_e( 'The FAQ Builder is a per-post tool. Enable the post types you want to use it on, then open a post or page to find the “FAQ Schema Builder” meta box. Saved FAQs are emitted as a FAQPage node on that post’s URL.', 'yse-agency' ); ?>
+            <?php esc_html_e( 'The FAQ Builder is a per-post tool. Enable the post types you want to use it on, then open a post or page to find the “FAQ Schema Builder” meta box. Saved FAQs are emitted as a FAQPage node on that post’s URL.', 'advanced-schema-extender' ); ?>
         </p>
         <table class="form-table" role="presentation">
             <tr>
-                <th scope="row"><?php esc_html_e( 'Enable FAQ Builder On', 'yse-agency' ); ?></th>
+                <th scope="row"><?php esc_html_e( 'Enable FAQ Builder On', 'advanced-schema-extender' ); ?></th>
                 <td>
-                    <div class="yse-faq-pt-list">
+                    <div class="ase-faq-pt-list">
                         <?php foreach ( $types as $slug => $type ) : ?>
                             <label>
                                 <input type="checkbox"
@@ -1267,16 +1265,16 @@ JS;
                             </label>
                         <?php endforeach; ?>
                     </div>
-                    <p class="description"><?php esc_html_e( 'No post types are enabled by default.', 'yse-agency' ); ?></p>
+                    <p class="description"><?php esc_html_e( 'No post types are enabled by default.', 'advanced-schema-extender' ); ?></p>
                 </td>
             </tr>
         </table>
         <p>
             <a href="<?php echo esc_url( admin_url( 'edit.php?post_type=page' ) ); ?>" class="button">
-                <?php esc_html_e( 'Open Pages', 'yse-agency' ); ?>
+                <?php esc_html_e( 'Open Pages', 'advanced-schema-extender' ); ?>
             </a>
             <a href="<?php echo esc_url( admin_url( 'edit.php' ) ); ?>" class="button">
-                <?php esc_html_e( 'Open Posts', 'yse-agency' ); ?>
+                <?php esc_html_e( 'Open Posts', 'advanced-schema-extender' ); ?>
             </a>
         </p>
         <?php
@@ -1288,14 +1286,14 @@ JS;
         ?>
         <table class="form-table" role="presentation">
             <tr>
-                <th scope="row"><?php esc_html_e( 'Override Yoast Organization', 'yse-agency' ); ?></th>
+                <th scope="row"><?php esc_html_e( 'Override Baseline Organization', 'advanced-schema-extender' ); ?></th>
                 <td>
                     <label>
                         <input type="checkbox" name="<?php echo $this->field_name( 'override_org' ); ?>" value="1" <?php checked( ! empty( $s['override_org'] ) ); ?> />
-                        <?php esc_html_e( 'Replace Yoast’s Organization fields entirely instead of merging.', 'yse-agency' ); ?>
+                        <?php esc_html_e( 'Replace baseline Organization fields entirely instead of merging.', 'advanced-schema-extender' ); ?>
                     </label>
                     <p class="description">
-                        <?php esc_html_e( 'Off by default. Enable only if Yoast’s Organization data conflicts with what you want emitted.', 'yse-agency' ); ?>
+                        <?php esc_html_e( 'Off by default. Enable only if the baseline Organization data conflicts with what you want emitted.', 'advanced-schema-extender' ); ?>
                     </p>
                 </td>
             </tr>
@@ -1311,30 +1309,30 @@ JS;
             $json = '{}';
         }
         ?>
-        <div class="yse-ie-panel">
-            <h2><?php esc_html_e( 'Import / Export', 'yse-agency' ); ?></h2>
-            <div class="yse-ie-grid">
-                <div class="yse-ie-col">
-                    <h3><?php esc_html_e( 'Export', 'yse-agency' ); ?></h3>
-                    <p class="description"><?php esc_html_e( 'Copy the JSON below to back up or transfer settings to another site.', 'yse-agency' ); ?></p>
-                    <textarea id="yse-export-json" readonly><?php echo esc_textarea( $json ); ?></textarea>
+        <div class="ase-ie-panel">
+            <h2><?php esc_html_e( 'Import / Export', 'advanced-schema-extender' ); ?></h2>
+            <div class="ase-ie-grid">
+                <div class="ase-ie-col">
+                    <h3><?php esc_html_e( 'Export', 'advanced-schema-extender' ); ?></h3>
+                    <p class="description"><?php esc_html_e( 'Copy the JSON below to back up or transfer settings to another site.', 'advanced-schema-extender' ); ?></p>
+                    <textarea id="ase-export-json" readonly><?php echo esc_textarea( $json ); ?></textarea>
                     <p>
-                        <button type="button" class="button yse-copy-export" data-copied="<?php esc_attr_e( 'Copied!', 'yse-agency' ); ?>">
-                            <?php esc_html_e( 'Copy to Clipboard', 'yse-agency' ); ?>
+                        <button type="button" class="button ase-copy-export" data-copied="<?php esc_attr_e( 'Copied!', 'advanced-schema-extender' ); ?>">
+                            <?php esc_html_e( 'Copy to Clipboard', 'advanced-schema-extender' ); ?>
                         </button>
                     </p>
                 </div>
-                <div class="yse-ie-col">
-                    <h3><?php esc_html_e( 'Import', 'yse-agency' ); ?></h3>
-                    <p class="description"><?php esc_html_e( 'Paste a previously exported JSON or upload a .json file. Importing replaces current settings.', 'yse-agency' ); ?></p>
+                <div class="ase-ie-col">
+                    <h3><?php esc_html_e( 'Import', 'advanced-schema-extender' ); ?></h3>
+                    <p class="description"><?php esc_html_e( 'Paste a previously exported JSON or upload a .json file. Importing replaces current settings.', 'advanced-schema-extender' ); ?></p>
                     <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" enctype="multipart/form-data">
-                        <input type="hidden" name="action" value="yse_import" />
-                        <?php wp_nonce_field( 'yse_import' ); ?>
-                        <textarea name="yse_import_json" rows="6" class="widefat code" placeholder='{"org_name":"…"}'></textarea>
-                        <p><input type="file" name="yse_import_file" accept=".json,application/json" /></p>
+                        <input type="hidden" name="action" value="advanced_schema_extender_import" />
+                        <?php wp_nonce_field( 'advanced_schema_extender_import' ); ?>
+                        <textarea name="ase_import_json" rows="6" class="widefat code" placeholder='{"org_name":"…"}'></textarea>
+                        <p><input type="file" name="ase_import_file" accept=".json,application/json" /></p>
                         <p>
                             <button type="submit" class="button button-primary">
-                                <?php esc_html_e( 'Import & Replace', 'yse-agency' ); ?>
+                                <?php esc_html_e( 'Import & Replace', 'advanced-schema-extender' ); ?>
                             </button>
                         </p>
                     </form>
@@ -1348,11 +1346,11 @@ JS;
 
     /**
      * Build a properly-escaped form field name like:
-     *   yse_settings[org_name]
-     *   yse_settings[ml_locations][0][name]
+     *   ase_settings[org_name]
+     *   ase_settings[ml_locations][0][name]
      */
     private function field_name( string ...$path ): string {
-        $name = esc_attr( YSE_OPTION_KEY );
+        $name = esc_attr( ASE_OPTION_KEY );
         foreach ( $path as $segment ) {
             $name .= '[' . esc_attr( $segment ) . ']';
         }
@@ -1361,14 +1359,14 @@ JS;
 
     private function register_status_message( string $key ): void {
         $messages = [
-            'ok'   => [ 'success', __( 'Settings imported successfully.', 'yse-agency' ) ],
-            'fail' => [ 'error',   __( 'Import failed. Paste or upload a valid JSON export.', 'yse-agency' ) ],
+            'ok'   => [ 'success', __( 'Settings imported successfully.', 'advanced-schema-extender' ) ],
+            'fail' => [ 'error',   __( 'Import failed. Paste or upload a valid JSON export.', 'advanced-schema-extender' ) ],
         ];
         if ( ! isset( $messages[ $key ] ) ) {
             return;
         }
         [ $type, $text ] = $messages[ $key ];
-        add_settings_error( YSE_OPTION_KEY, 'yse_import_' . $key, $text, $type );
+        add_settings_error( ASE_OPTION_KEY, 'advanced_schema_extender_import_' . $key, $text, $type );
     }
 
     /* ================================================================== *
@@ -1377,9 +1375,9 @@ JS;
 
     public function handle_import(): void {
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_die( esc_html__( 'Insufficient permissions.', 'yse-agency' ) );
+            wp_die( esc_html__( 'Insufficient permissions.', 'advanced-schema-extender' ) );
         }
-        check_admin_referer( 'yse_import' );
+        check_admin_referer( 'advanced_schema_extender_import' );
 
         $result = $this->process_import_payload();
 
@@ -1390,7 +1388,7 @@ JS;
         }
 
         wp_safe_redirect( add_query_arg(
-            [ 'page' => YSE_PAGE_SLUG, 'yse_import' => $result ],
+            [ 'page' => ASE_PAGE_SLUG, 'advanced_schema_extender_import' => $result ],
             admin_url( 'options-general.php' )
         ) );
         exit;
@@ -1404,19 +1402,19 @@ JS;
         $json = '';
 
         if (
-            isset( $_FILES['yse_import_file']['tmp_name'], $_FILES['yse_import_file']['error'] )
-            && UPLOAD_ERR_OK === (int) $_FILES['yse_import_file']['error']
-            && '' !== $_FILES['yse_import_file']['tmp_name']
-            && is_uploaded_file( $_FILES['yse_import_file']['tmp_name'] )
+            isset( $_FILES['ase_import_file']['tmp_name'], $_FILES['ase_import_file']['error'] )
+            && UPLOAD_ERR_OK === (int) $_FILES['ase_import_file']['error']
+            && '' !== $_FILES['ase_import_file']['tmp_name']
+            && is_uploaded_file( $_FILES['ase_import_file']['tmp_name'] )
         ) {
-            $contents = file_get_contents( $_FILES['yse_import_file']['tmp_name'] );
+            $contents = file_get_contents( $_FILES['ase_import_file']['tmp_name'] );
             if ( false !== $contents ) {
                 $json = (string) $contents;
             }
         }
 
-        if ( '' === $json && isset( $_POST['yse_import_json'] ) ) {
-            $json = (string) wp_unslash( $_POST['yse_import_json'] );
+        if ( '' === $json && isset( $_POST['ase_import_json'] ) ) {
+            $json = (string) wp_unslash( $_POST['ase_import_json'] );
         }
 
         $json = trim( $json );
@@ -1429,7 +1427,7 @@ JS;
             return 'fail';
         }
 
-        update_option( YSE_OPTION_KEY, $this->sanitize_settings( $decoded ) );
+        update_option( ASE_OPTION_KEY, $this->sanitize_settings( $decoded ) );
         return 'ok';
     }
 
@@ -1438,7 +1436,7 @@ JS;
      * ================================================================== */
 
     public function register_meta_boxes(): void {
-        $settings   = (array) get_option( YSE_OPTION_KEY, [] );
+        $settings   = (array) get_option( ASE_OPTION_KEY, [] );
         $post_types = is_array( $settings['faq_post_types'] ?? null ) ? $settings['faq_post_types'] : [];
 
         if ( empty( $post_types ) ) {
@@ -1446,8 +1444,8 @@ JS;
         }
 
         add_meta_box(
-            'yse_faq_builder',
-            __( 'Schema Extender FAQ', 'yse-agency' ),
+            'ase_faq_builder',
+            __( 'Schema Extender FAQ', 'advanced-schema-extender' ),
             [ $this, 'render_faq_meta_box' ],
             $post_types,
             'normal',
@@ -1456,10 +1454,10 @@ JS;
     }
 
     public function render_faq_meta_box( WP_Post $post ): void {
-        wp_nonce_field( 'yse_save_faq_' . $post->ID, '_yse_faq_nonce' );
+        wp_nonce_field( 'ase_save_faq_' . $post->ID, '_ase_faq_nonce' );
 
         $items = [];
-        $raw   = get_post_meta( $post->ID, '_yse_faq_items', true );
+        $raw   = get_post_meta( $post->ID, '_ase_faq_items', true );
         if ( is_string( $raw ) && '' !== $raw ) {
             $decoded = json_decode( $raw, true );
             if ( is_array( $decoded ) ) {
@@ -1468,19 +1466,19 @@ JS;
         }
         ?>
         <p class="description">
-            <?php esc_html_e( 'Add up to 20 Q&A pairs. Each pair becomes a Question entry in the FAQPage schema node for this post.', 'yse-agency' ); ?>
+            <?php esc_html_e( 'Add up to 20 Q&A pairs. Each pair becomes a Question entry in the FAQPage schema node for this post.', 'advanced-schema-extender' ); ?>
         </p>
-        <div id="yse-faq-list">
+        <div id="ase-faq-list">
             <?php foreach ( $items as $item ) : ?>
                 <?php $this->render_faq_row( (array) $item ); ?>
             <?php endforeach; ?>
         </div>
         <p>
-            <button type="button" class="button yse-add-faq">
-                <?php esc_html_e( '+ Add Question', 'yse-agency' ); ?>
+            <button type="button" class="button ase-add-faq">
+                <?php esc_html_e( '+ Add Question', 'advanced-schema-extender' ); ?>
             </button>
         </p>
-        <script type="text/template" id="yse-faq-template"><?php
+        <script type="text/template" id="ase-faq-template"><?php
             $this->render_faq_row( [ 'q' => '', 'a' => '' ] );
         ?></script>
         <?php
@@ -1495,21 +1493,21 @@ JS;
     private function render_faq_row( array $item ): void {
         $answer_display = preg_replace( '/<br\s*\/?>/i', "\n", (string) ( $item['a'] ?? '' ) );
         ?>
-        <div class="yse-faq-row">
+        <div class="ase-faq-row">
             <label>
-                <?php esc_html_e( 'Question', 'yse-agency' ); ?>
+                <?php esc_html_e( 'Question', 'advanced-schema-extender' ); ?>
                 <input type="text"
-                       name="yse_faq[q][]"
+                       name="ase_faq[q][]"
                        value="<?php echo esc_attr( (string) ( $item['q'] ?? '' ) ); ?>"
-                       placeholder="<?php esc_attr_e( 'Enter question…', 'yse-agency' ); ?>" />
+                       placeholder="<?php esc_attr_e( 'Enter question…', 'advanced-schema-extender' ); ?>" />
             </label>
             <label>
-                <?php esc_html_e( 'Answer', 'yse-agency' ); ?>
-                <textarea name="yse_faq[a][]"
+                <?php esc_html_e( 'Answer', 'advanced-schema-extender' ); ?>
+                <textarea name="ase_faq[a][]"
                           rows="3"
-                          placeholder="<?php esc_attr_e( 'Enter answer…', 'yse-agency' ); ?>"><?php echo esc_textarea( $answer_display ); ?></textarea>
+                          placeholder="<?php esc_attr_e( 'Enter answer…', 'advanced-schema-extender' ); ?>"><?php echo esc_textarea( $answer_display ); ?></textarea>
             </label>
-            <a href="#" class="yse-remove-faq"><?php esc_html_e( 'Remove', 'yse-agency' ); ?></a>
+            <a href="#" class="ase-remove-faq"><?php esc_html_e( 'Remove', 'advanced-schema-extender' ); ?></a>
         </div>
         <?php
     }
@@ -1528,15 +1526,15 @@ JS;
     public function save_post_meta( int $post_id, WP_Post $post ): void {
         if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) { return; }
         if ( wp_is_post_revision( $post_id ) )                { return; }
-        if ( ! isset( $_POST['_yse_faq_nonce'] ) )            { return; }
+        if ( ! isset( $_POST['_ase_faq_nonce'] ) )            { return; }
         if ( ! wp_verify_nonce(
-                sanitize_text_field( wp_unslash( $_POST['_yse_faq_nonce'] ) ),
-                'yse_save_faq_' . $post_id
+                sanitize_text_field( wp_unslash( $_POST['_ase_faq_nonce'] ) ),
+                'ase_save_faq_' . $post_id
             ) ) { return; }
         if ( ! current_user_can( 'edit_post', $post_id ) )    { return; }
 
-        $questions = isset( $_POST['yse_faq']['q'] ) ? (array) $_POST['yse_faq']['q'] : [];
-        $answers   = isset( $_POST['yse_faq']['a'] ) ? (array) $_POST['yse_faq']['a'] : [];
+        $questions = isset( $_POST['ase_faq']['q'] ) ? (array) $_POST['ase_faq']['q'] : [];
+        $answers   = isset( $_POST['ase_faq']['a'] ) ? (array) $_POST['ase_faq']['a'] : [];
 
         $allowed_html = [
             'br'     => [],
@@ -1579,7 +1577,7 @@ JS;
             $items[] = [ 'q' => $q, 'a' => $a ];
         }
 
-        update_post_meta( $post_id, '_yse_faq_items', wp_json_encode( $items ) );
+        update_post_meta( $post_id, '_ase_faq_items', wp_json_encode( $items ) );
     }
 
     /* ================================================================== *
@@ -1587,13 +1585,13 @@ JS;
      * ================================================================== */
 
     private function hook_schema_filters(): void {
-        // Defer filter registration to wp_loaded so all Yoast classes are available.
+        // Defer filter registration to wp_loaded so SEO plugin classes are available.
         add_action( 'wp_loaded', [ $this, 'maybe_register_schema_filter' ] );
     }
 
     public function maybe_register_schema_filter(): void {
         if ( class_exists( '\Yoast\WP\SEO\Generators\Schema\Abstract_Schema_Piece' ) ) {
-            // wpseo_schema_organization fires only when Yoast's "Site Representation"
+            // wpseo_schema_organization fires only when Site Representation
             // is set to "Organization".  If it is set to "Person", this filter never
             // fires and Organization enrichment is silently skipped — which is correct
             // behaviour, not a bug.
@@ -1607,15 +1605,14 @@ JS;
      * ================================================================== */
 
     /**
-     * Enrich (not replace) Yoast's Organization node via wpseo_schema_organization.
+     * Enrich (not replace) the Organization node via wpseo_schema_organization.
      *
      * Merge strategy:
      *   override_org = false (default) — Extender value is written only when the
-     *     Yoast field is absent or effectively empty.
+     *     existing field is absent or effectively empty.
      *   override_org = true            — Extender value always wins.
      *
-     * sameAs is always merged + deduplicated regardless of override_org, because
-     * adding social profiles alongside Yoast's is universally correct.
+     * sameAs is always merged + deduplicated regardless of override_org.
      */
     public function filter_organization_node( $node ): array {
         if ( ! is_array( $node ) ) {
@@ -1623,7 +1620,7 @@ JS;
         }
 
         $s = wp_parse_args(
-            (array) get_option( YSE_OPTION_KEY, [] ),
+            (array) get_option( ASE_OPTION_KEY, [] ),
             $this->default_settings()
         );
 
@@ -1691,8 +1688,7 @@ JS;
 
     /**
      * Merge Extender sameAs URLs into the node's existing sameAs array.
-     * Deduplicates by exact URL string.  Always runs regardless of override_org
-     * because adding profiles alongside Yoast's is safe by definition.
+     * Deduplicates by exact URL string. Always runs regardless of override_org.
      */
     private function merge_same_as( array $node, array $ext_urls ): array {
         $existing = [];
@@ -1822,7 +1818,7 @@ JS;
         }
 
         $s = wp_parse_args(
-            (array) get_option( YSE_OPTION_KEY, [] ),
+            (array) get_option( ASE_OPTION_KEY, [] ),
             $this->default_settings()
         );
 
@@ -1878,7 +1874,7 @@ JS;
         }
 
         // Load stored items.
-        $raw = get_post_meta( $post->ID, '_yse_faq_items', true );
+        $raw = get_post_meta( $post->ID, '_ase_faq_items', true );
         if ( ! is_string( $raw ) || '' === $raw ) {
             return $graph;
         }
@@ -1948,7 +1944,7 @@ JS;
 
     /**
      * Find the WebPage node @id in the graph.
-     * Falls back to the standard Yoast '#webpage' fragment.
+     * Falls back to the standard '#webpage' fragment.
      */
     private function find_webpage_id( array $graph, string $post_url ): string {
         foreach ( $graph as $node ) {
@@ -2012,7 +2008,7 @@ JS;
 
     /**
      * Walk the graph looking for an Organization or LocalBusiness @id.
-     * Falls back to the standard Yoast pattern if none is found.
+     * Falls back to the standard pattern if none is found.
      */
     private function find_org_id( array $graph ): string {
         foreach ( $graph as $node ) {
@@ -2164,18 +2160,20 @@ JS;
 }
 
 /**
- * Bootstrap on plugins_loaded so Yoast SEO has time to register first.
- * If Yoast isn't active we still load — settings remain reachable and
+ * Bootstrap on plugins_loaded so the dependency plugin has time to register first.
+ * If the dependency isn't active we still load — settings remain reachable and
  * the schema filter is a harmless no-op.
  */
-function yse_bootstrap(): void {
+function ase_bootstrap(): void {
     if ( is_admin() && ! class_exists( 'WPSEO_Options' ) ) {
-        add_action( 'admin_notices', 'yse_yoast_missing_notice' );
+        add_action( 'admin_notices', 'ase_dependency_missing_notice' );
     }
-    YSE_Agency_UI::instance();
+    ASE_Agency_UI::instance();
 }
-add_action( 'plugins_loaded', 'yse_bootstrap' );
+add_action( 'plugins_loaded', 'ase_bootstrap' );
 
-function yse_yoast_missing_notice(): void {
-    echo '<div class="notice notice-warning"><p><strong>Yoast Schema Extender — Agency Pack</strong> requires <strong>Yoast SEO</strong> to actually output schema. Install or activate Yoast SEO to see merged graph results.</p></div>';
+function ase_dependency_missing_notice(): void {
+    echo '<div class="notice notice-warning"><p><strong>Advanced Schema Extender for Yoast</strong> requires <strong>Yoast SEO</strong> to actually output schema. Install or activate Yoast SEO to see merged graph results.</p></div>';
 }
+
+

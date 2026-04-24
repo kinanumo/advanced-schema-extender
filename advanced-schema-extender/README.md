@@ -1,4 +1,4 @@
-# Yoast Schema Extender - Agency Pack
+# Advanced Schema Extender for Yoast
 
 Copyright 2026 Kendrick Omar Salting (kinanumo.com). All Rights Reserved.
 
