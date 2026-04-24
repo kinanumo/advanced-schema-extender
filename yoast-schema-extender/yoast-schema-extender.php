@@ -3,7 +3,7 @@
  * Plugin Name:       Yoast Schema Extender — Agency Pack
  * Plugin URI:        https://kinanumo.com
  * Description:       Extends Yoast SEO's schema graph with Organization enrichment, multi-location LocalBusiness support, and a per-post FAQ builder. Merges with Yoast — never replaces (unless explicitly overridden).
- * Version:           2.5.5
+ * Version:           2.5.6
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Kendrick Omar Salting
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'YSE_VERSION',    '2.5.5' );
+define( 'YSE_VERSION',    '2.5.6' );
 define( 'YSE_FILE',       __FILE__ );
 define( 'YSE_DIR',        plugin_dir_path( __FILE__ ) );
 define( 'YSE_URL',        plugin_dir_url( __FILE__ ) );
@@ -27,6 +27,7 @@ define( 'YSE_PAGE_SLUG',  'yse-settings' );
 final class YSE_Agency_UI {
 
     private static ?YSE_Agency_UI $instance = null;
+    private array $pending_subtype_errors = [];
 
     public static function instance(): self {
         if ( null === self::$instance ) {
@@ -134,6 +135,8 @@ final class YSE_Agency_UI {
      * - Whitelists keys so only the documented v2.5.5 fields are persisted.
      */
     public function sanitize_settings( $raw ): array {
+        $this->pending_subtype_errors = [];
+
         if ( ! is_array( $raw ) ) {
             $existing = get_option( YSE_OPTION_KEY, $this->default_settings() );
             return is_array( $existing ) ? $existing : $this->default_settings();
@@ -164,9 +167,24 @@ final class YSE_Agency_UI {
 
         // ---- LocalBusiness toggle + subtypes --------------------------------
         $clean['is_local']     = ! empty( $raw['is_local'] );
-        $clean['lb_subtype']   = $this->sanitize_lb_subtype( $raw['lb_subtype']  ?? '' );
-        $clean['lb_subtype2']  = $this->sanitize_lb_subtype( $raw['lb_subtype2'] ?? '' );
-        $clean['lb_subtype3']  = $this->sanitize_lb_subtype( $raw['lb_subtype3'] ?? '' );
+        $clean['lb_subtype']   = $this->sanitize_lb_subtype(
+            $raw['lb_subtype'] ?? '',
+            (string) ( $existing['lb_subtype'] ?? '' ),
+            'lb_subtype',
+            __( 'LocalBusiness subtype #1', 'yse-agency' )
+        );
+        $clean['lb_subtype2']  = $this->sanitize_lb_subtype(
+            $raw['lb_subtype2'] ?? '',
+            (string) ( $existing['lb_subtype2'] ?? '' ),
+            'lb_subtype2',
+            __( 'LocalBusiness subtype #2', 'yse-agency' )
+        );
+        $clean['lb_subtype3']  = $this->sanitize_lb_subtype(
+            $raw['lb_subtype3'] ?? '',
+            (string) ( $existing['lb_subtype3'] ?? '' ),
+            'lb_subtype3',
+            __( 'LocalBusiness subtype #3', 'yse-agency' )
+        );
 
         // ---- Address --------------------------------------------------------
         $clean['addr_street']  = sanitize_text_field( (string) ( $raw['addr_street']  ?? '' ) );
@@ -182,10 +200,18 @@ final class YSE_Agency_UI {
         // ---- Multi-location -------------------------------------------------
         $clean['ml_enabled']   = ! empty( $raw['ml_enabled'] );
         if ( isset( $raw['ml_locations'] ) && is_array( $raw['ml_locations'] ) ) {
-            $clean['ml_locations'] = array_values( array_map(
-                [ $this, 'sanitize_location' ],
-                $raw['ml_locations']
-            ) );
+            $existing_locations = is_array( $existing['ml_locations'] ?? null ) ? $existing['ml_locations'] : [];
+            $clean['ml_locations'] = [];
+
+            foreach ( $raw['ml_locations'] as $location_key => $location_raw ) {
+                $fallback_location = is_array( $existing_locations[ $location_key ] ?? null ) ? $existing_locations[ $location_key ] : [];
+
+                $clean['ml_locations'][] = $this->sanitize_location(
+                    $location_raw,
+                    (string) $location_key,
+                    $fallback_location
+                );
+            }
         }
 
         // ---- FAQ post types -------------------------------------------------
@@ -193,6 +219,8 @@ final class YSE_Agency_UI {
 
         // ---- Compatibility --------------------------------------------------
         $clean['override_org'] = ! empty( $raw['override_org'] );
+
+        $this->flush_pending_subtype_errors();
 
         return $clean;
     }
@@ -301,15 +329,67 @@ final class YSE_Agency_UI {
         return (string) (float) $raw;
     }
 
-    private function sanitize_lb_subtype( $raw ): string {
+    private function sanitize_lb_subtype( $raw, string $fallback = '', string $field_key = '', string $human_label = '' ): string {
         if ( is_array( $raw ) ) {
-            return '';
+            $raw = '';
         }
-        $raw = is_string( $raw ) ? trim( $raw ) : '';
-        if ( '' === $raw ) {
-            return '';
+        $raw = is_string( $raw ) ? trim( wp_unslash( $raw ) ) : '';
+        if ( '' !== $raw && $this->is_valid_lb_subtype( $raw ) ) {
+            return $raw;
         }
-        return array_key_exists( $raw, $this->lb_subtypes() ) ? $raw : '';
+
+        if ( '' !== $raw && '' !== $field_key ) {
+            $this->pending_subtype_errors[ $field_key ] = [
+                'label' => '' !== $human_label ? $human_label : $field_key,
+                'value' => $raw,
+            ];
+        }
+
+        $fallback = trim( $fallback );
+        if ( '' !== $fallback && $this->is_valid_lb_subtype( $fallback ) ) {
+            return $fallback;
+        }
+
+        return '';
+    }
+
+    private function flush_pending_subtype_errors(): void {
+        if ( empty( $this->pending_subtype_errors ) ) {
+            return;
+        }
+
+        $parts = [];
+        foreach ( $this->pending_subtype_errors as $item ) {
+            $label = isset( $item['label'] ) ? (string) $item['label'] : '';
+            $value = isset( $item['value'] ) ? (string) $item['value'] : '';
+            if ( '' === $label || '' === $value ) {
+                continue;
+            }
+            $parts[] = sprintf( '%1$s: "%2$s"', $label, $value );
+        }
+
+        if ( ! empty( $parts ) ) {
+            add_settings_error(
+                YSE_OPTION_KEY,
+                'yse_invalid_lb_subtypes',
+                sprintf(
+                    /* translators: %s: comma-separated list of invalid subtype fields and values. */
+                    __( 'Some LocalBusiness subtype values could not be saved and previous values were kept: %s', 'yse-agency' ),
+                    esc_html( implode( ', ', $parts ) )
+                ),
+                'error'
+            );
+        }
+
+        $this->pending_subtype_errors = [];
+    }
+
+    private function is_valid_lb_subtype( string $value ): bool {
+        if ( array_key_exists( $value, $this->lb_subtypes() ) ) {
+            return true;
+        }
+
+        return 1 === preg_match( '/^[A-Z][A-Za-z0-9]+$/', $value );
     }
 
     private function sanitize_post_types( $raw ): array {
@@ -330,10 +410,26 @@ final class YSE_Agency_UI {
         return $out;
     }
 
-    public function sanitize_location( $raw ): array {
+    public function sanitize_location( $raw, string $location_key = '', array $fallback = [] ): array {
         if ( ! is_array( $raw ) ) {
             return $this->blank_location();
         }
+
+        $fallback = wp_parse_args( $fallback, $this->blank_location() );
+
+        $field_prefix = 'ml_location';
+        if ( '' !== $location_key ) {
+            $field_prefix .= '_' . sanitize_key( $location_key );
+        }
+
+        $location_label = __( 'Location', 'yse-agency' );
+        if ( '' !== $location_key && is_numeric( $location_key ) ) {
+            $location_label = sprintf(
+                __( 'Location #%d', 'yse-agency' ),
+                ( (int) $location_key ) + 1
+            );
+        }
+
         return [
             'name'          => sanitize_text_field( (string) ( $raw['name']       ?? '' ) ),
             'enabled'       => ! empty( $raw['enabled'] ),
@@ -343,9 +439,24 @@ final class YSE_Agency_UI {
             'telephone'     => sanitize_text_field(  (string) ( $raw['telephone'] ?? '' ) ),
             'email'         => sanitize_email(       (string) ( $raw['email']      ?? '' ) ),
             'priceRange'    => sanitize_text_field(  (string) ( $raw['priceRange'] ?? '' ) ),
-            'lb_subtype'    => $this->sanitize_lb_subtype( $raw['lb_subtype']  ?? '' ),
-            'lb_subtype2'   => $this->sanitize_lb_subtype( $raw['lb_subtype2'] ?? '' ),
-            'lb_subtype3'   => $this->sanitize_lb_subtype( $raw['lb_subtype3'] ?? '' ),
+            'lb_subtype'    => $this->sanitize_lb_subtype(
+                $raw['lb_subtype'] ?? '',
+                (string) ( $fallback['lb_subtype'] ?? '' ),
+                $field_prefix . '_lb_subtype',
+                sprintf( __( '%1$s subtype #1', 'yse-agency' ), $location_label )
+            ),
+            'lb_subtype2'   => $this->sanitize_lb_subtype(
+                $raw['lb_subtype2'] ?? '',
+                (string) ( $fallback['lb_subtype2'] ?? '' ),
+                $field_prefix . '_lb_subtype2',
+                sprintf( __( '%1$s subtype #2', 'yse-agency' ), $location_label )
+            ),
+            'lb_subtype3'   => $this->sanitize_lb_subtype(
+                $raw['lb_subtype3'] ?? '',
+                (string) ( $fallback['lb_subtype3'] ?? '' ),
+                $field_prefix . '_lb_subtype3',
+                sprintf( __( '%1$s subtype #3', 'yse-agency' ), $location_label )
+            ),
             'addr_street'   => sanitize_text_field( (string) ( $raw['addr_street']  ?? '' ) ),
             'addr_city'     => sanitize_text_field( (string) ( $raw['addr_city']    ?? '' ) ),
             'addr_region'   => sanitize_text_field( (string) ( $raw['addr_region']  ?? '' ) ),
