@@ -3,7 +3,7 @@
  * Plugin Name:       Advanced Schema Extender for Yoast
  * Plugin URI:        https://kinanumo.com
  * Description:       Extends your site schema graph with Organization enrichment, multi-location LocalBusiness support, and a per-post FAQ builder.
- * Version:           3.0.2
+ * Version:           3.0.3
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Kendrick Omar Salting
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'ASE_VERSION',    '3.0.2' );
+define( 'ASE_VERSION',    '3.0.3' );
 define( 'ASE_FILE',       __FILE__ );
 define( 'ASE_DIR',        plugin_dir_path( __FILE__ ) );
 define( 'ASE_URL',        plugin_dir_url( __FILE__ ) );
@@ -158,11 +158,13 @@ final class ASE_Agency_UI {
         // ---- Multi-line / array fields --------------------------------------
         $clean['same_as']      = $this->sanitize_lines_as_urls( $raw['same_as']      ?? '' );
         $clean['service_area'] = $this->sanitize_lines_as_text( $raw['service_area'] ?? '' );
-        $clean['opening_hours'] = $this->sanitize_json_field(
-            $raw['opening_hours'] ?? '',
-            $existing['opening_hours'] ?? [],
-            'opening_hours',
-            __( 'Opening Hours', 'advanced-schema-extender' )
+        $clean['opening_hours'] = $this->normalize_opening_hours_specifications(
+            $this->sanitize_json_field(
+                $raw['opening_hours'] ?? '',
+                $existing['opening_hours'] ?? [],
+                'opening_hours',
+                __( 'Opening Hours', 'advanced-schema-extender' )
+            )
         );
 
         // ---- LocalBusiness toggle + subtypes --------------------------------
@@ -296,6 +298,24 @@ final class ASE_Agency_UI {
         }
 
         return $decoded;
+    }
+
+    /**
+     * Ensure each opening-hours entry declares @type OpeningHoursSpecification.
+     */
+    private function normalize_opening_hours_specifications( array $items ): array {
+        $normalized = [];
+
+        foreach ( $items as $item ) {
+            if ( ! is_array( $item ) ) {
+                continue;
+            }
+
+            $item['@type'] = 'OpeningHoursSpecification';
+            $normalized[]  = $item;
+        }
+
+        return $normalized;
     }
 
     /**
@@ -465,11 +485,13 @@ final class ASE_Agency_UI {
             'geo_lat'       => $this->sanitize_geo( $raw['geo_lat'] ?? '' ),
             'geo_lng'       => $this->sanitize_geo( $raw['geo_lng'] ?? '' ),
             'service_area'  => $this->sanitize_lines_as_text( $raw['service_area']  ?? '' ),
-            'opening_hours' => $this->sanitize_json_field(
-                $raw['opening_hours'] ?? '',
-                [],
-                'location_opening_hours',
-                __( 'Location Opening Hours', 'advanced-schema-extender' )
+            'opening_hours' => $this->normalize_opening_hours_specifications(
+                $this->sanitize_json_field(
+                    $raw['opening_hours'] ?? '',
+                    [],
+                    'location_opening_hours',
+                    __( 'Location Opening Hours', 'advanced-schema-extender' )
+                )
             ),
         ];
     }
@@ -707,11 +729,11 @@ final class ASE_Agency_UI {
         if ( $.trim($target.val()) !== '' ) { return; }
 
         var sample = [
-            { dayOfWeek: 'Monday',    opens: '09:00', closes: '17:00' },
-            { dayOfWeek: 'Tuesday',   opens: '09:00', closes: '17:00' },
-            { dayOfWeek: 'Wednesday', opens: '09:00', closes: '17:00' },
-            { dayOfWeek: 'Thursday',  opens: '09:00', closes: '17:00' },
-            { dayOfWeek: 'Friday',    opens: '09:00', closes: '17:00' }
+            { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Monday',    opens: '09:00', closes: '17:00' },
+            { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Tuesday',   opens: '09:00', closes: '17:00' },
+            { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Wednesday', opens: '09:00', closes: '17:00' },
+            { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Thursday',  opens: '09:00', closes: '17:00' },
+            { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Friday',    opens: '09:00', closes: '17:00' }
         ];
 
         $target.val(JSON.stringify(sample, null, 2)).trigger('change');
@@ -1674,9 +1696,10 @@ JS;
         // ---- GeoCoordinates -------------------------------------------------
         $node = $this->maybe_inject_geo( $node, $s, $override );
 
-        // ---- OpeningHoursSpecification --------------------------------------
-        $ext_oh = is_array( $s['opening_hours'] ?? null ) ? $s['opening_hours'] : [];
-        if ( ! empty( $ext_oh ) && ( $override || $this->is_node_field_empty( $node, 'openingHoursSpecification' ) ) ) {
+        // ---- OpeningHoursSpecification (LocalBusiness context only) ---------
+        $is_local_business_context = ! empty( $s['is_local'] ) || $this->node_has_type( $node, 'LocalBusiness' );
+        $ext_oh = is_array( $s['opening_hours'] ?? null ) ? $this->normalize_opening_hours_specifications( $s['opening_hours'] ) : [];
+        if ( $is_local_business_context && ! empty( $ext_oh ) && ( $override || $this->is_node_field_empty( $node, 'openingHoursSpecification' ) ) ) {
             $node['openingHoursSpecification'] = $ext_oh;
         }
 
@@ -1704,6 +1727,14 @@ JS;
             return empty( $val );
         }
         return '' === $val;
+    }
+
+    /**
+     * Check whether a schema node declares a given @type value.
+     */
+    private function node_has_type( array $node, string $type ): bool {
+        $types = isset( $node['@type'] ) ? (array) $node['@type'] : [];
+        return in_array( $type, $types, true );
     }
 
     /**
@@ -2150,7 +2181,7 @@ JS;
         }
 
         // Opening hours — location-specific value only
-        $oh = is_array( $L['opening_hours'] ?? null ) ? $L['opening_hours'] : [];
+        $oh = is_array( $L['opening_hours'] ?? null ) ? $this->normalize_opening_hours_specifications( $L['opening_hours'] ) : [];
         if ( ! empty( $oh ) ) {
             $node['openingHoursSpecification'] = $oh;
         }
