@@ -3,7 +3,7 @@
  * Plugin Name:       Advanced Schema Extender for Yoast
  * Plugin URI:        https://kinanumo.com
  * Description:       Extends your site schema graph with Organization enrichment, multi-location LocalBusiness support, and a per-post FAQ builder.
- * Version:           3.0.1
+ * Version:           3.0.2
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Kendrick Omar Salting
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'ASE_VERSION',    '3.0.1' );
+define( 'ASE_VERSION',    '3.0.2' );
 define( 'ASE_FILE',       __FILE__ );
 define( 'ASE_DIR',        plugin_dir_path( __FILE__ ) );
 define( 'ASE_URL',        plugin_dir_url( __FILE__ ) );
@@ -615,6 +615,11 @@ final class ASE_Agency_UI {
 (function($){
     'use strict';
 
+    function toggleLocalBusinessOnlyRows() {
+        var enabled = $('#ase-is-local').is(':checked');
+        $('.ase-localbusiness-only').toggleClass('ase-hidden-row', !enabled);
+    }
+
     /* 1. Copy export JSON */
     $(document).on('click', '.ase-copy-export', function(e){
         e.preventDefault();
@@ -691,6 +696,28 @@ final class ASE_Agency_UI {
         e.preventDefault();
         $(this).closest('.ase-faq-row').remove();
     });
+
+    /* 5. LocalBusiness field visibility + opening-hours sample */
+    $(document).on('change', '#ase-is-local', toggleLocalBusinessOnlyRows);
+
+    $(document).on('click', '.ase-generate-opening-hours', function(e){
+        e.preventDefault();
+        var $target = $('#ase-opening-hours');
+        if ( ! $target.length ) { return; }
+        if ( $.trim($target.val()) !== '' ) { return; }
+
+        var sample = [
+            { dayOfWeek: 'Monday',    opens: '09:00', closes: '17:00' },
+            { dayOfWeek: 'Tuesday',   opens: '09:00', closes: '17:00' },
+            { dayOfWeek: 'Wednesday', opens: '09:00', closes: '17:00' },
+            { dayOfWeek: 'Thursday',  opens: '09:00', closes: '17:00' },
+            { dayOfWeek: 'Friday',    opens: '09:00', closes: '17:00' }
+        ];
+
+        $target.val(JSON.stringify(sample, null, 2)).trigger('change');
+    });
+
+    toggleLocalBusinessOnlyRows();
 
 })(jQuery);
 JS;
@@ -1002,12 +1029,12 @@ JS;
                 <th scope="row"><?php esc_html_e( 'Treat as LocalBusiness', 'advanced-schema-extender' ); ?></th>
                 <td>
                     <label>
-                        <input type="checkbox" name="<?php echo $this->field_name( 'is_local' ); ?>" value="1" <?php checked( ! empty( $s['is_local'] ) ); ?> />
+                        <input id="ase-is-local" type="checkbox" name="<?php echo $this->field_name( 'is_local' ); ?>" value="1" <?php checked( ! empty( $s['is_local'] ) ); ?> />
                         <?php esc_html_e( 'Add LocalBusiness type, address, hours, and geo to the Organization node.', 'advanced-schema-extender' ); ?>
                     </label>
                 </td>
             </tr>
-            <tr>
+            <tr class="ase-localbusiness-only<?php echo empty( $s['is_local'] ) ? ' ase-hidden-row' : ''; ?>">
                 <th scope="row"><?php esc_html_e( 'LocalBusiness Subtypes', 'advanced-schema-extender' ); ?></th>
                 <td>
                     <div class="ase-subtype-grid">
@@ -1050,9 +1077,10 @@ JS;
                 <td>
                     <textarea id="ase-opening-hours" name="<?php echo $this->field_name( 'opening_hours' ); ?>" rows="6" class="large-text code"><?php echo esc_textarea( $this->array_to_pretty_json( $s['opening_hours'] ) ); ?></textarea>
                     <p class="description"><?php echo wp_kses(
-                        __( 'JSON array of <code>OpeningHoursSpecification</code> objects. Example: <code>[{"dayOfWeek":"Monday","opens":"09:00","closes":"17:00"}]</code>', 'advanced-schema-extender' ),
+                        __( 'JSON array of <code>OpeningHoursSpecification</code> objects.', 'advanced-schema-extender' ),
                         [ 'code' => [] ]
-                    ); ?></p>
+                    ); ?>
+                    <a href="#" class="ase-generate-opening-hours"><?php esc_html_e( 'Generate sample', 'advanced-schema-extender' ); ?></a></p>
                 </td>
             </tr>
             <tr>

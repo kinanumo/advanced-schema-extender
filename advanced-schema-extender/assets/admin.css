@@ -1,6 +1,6 @@
 /* =================================================================
  * Advanced Schema Extender for Yoast
- * Admin stylesheet (v3.0.1)
+ * Admin stylesheet (v3.0.2)
  * Loaded on: settings_page_advanced-schema-extender, post.php, post-new.php
  * ================================================================= */
 
@@ -172,6 +172,8 @@
     gap: 8px;
     align-items: center;
 }
+.ase-hidden-row { display: none; }
+.ase-generate-opening-hours { margin-left: 8px; }
 .ase-subtype-grid select { max-width: 220px; }
 
 /* ---------- Logo picker ---------- */
@@ -372,6 +374,14 @@
     resize: vertical;
 }
 #ase-opening-hours { font-family: Menlo, Consolas, monospace; font-size: 12px; }
+#ase-geo-lat,
+#ase-geo-lng,
+input[name="advanced_schema_extender_settings[geo_lat]"],
+input[name="advanced_schema_extender_settings[geo_lng]"],
+input[name*="[ml_locations]"][name$="[geo_lat]"],
+input[name*="[ml_locations]"][name$="[geo_lng]"] {
+    width: 130px;
+}
 
 /* ---------- Notices ---------- */
 .ase-wrap .notice { margin: 12px 0 18px; }
