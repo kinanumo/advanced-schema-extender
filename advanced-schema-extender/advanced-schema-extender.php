@@ -3,7 +3,7 @@
  * Plugin Name:       Advanced Schema Extender for Yoast
  * Plugin URI:        https://kinanumo.com
  * Description:       Extends your site schema graph with Organization enrichment, multi-location LocalBusiness support, and a per-post FAQ builder.
- * Version:           3.0.0
+ * Version:           3.0.1
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Kendrick Omar Salting
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'ASE_VERSION',    '3.0.0' );
+define( 'ASE_VERSION',    '3.0.1' );
 define( 'ASE_FILE',       __FILE__ );
 define( 'ASE_DIR',        plugin_dir_path( __FILE__ ) );
 define( 'ASE_URL',        plugin_dir_url( __FILE__ ) );
@@ -721,7 +721,7 @@ JS;
                 <span class="ase-version">v<?php echo esc_html( ASE_VERSION ); ?></span>
             </h1>
 
-            <?php settings_errors(); ?>
+            <?php settings_errors( ASE_OPTION_KEY ); ?>
 
             <?php $this->render_status_table( $settings ); ?>
 
@@ -1269,14 +1269,6 @@ JS;
                 </td>
             </tr>
         </table>
-        <p>
-            <a href="<?php echo esc_url( admin_url( 'edit.php?post_type=page' ) ); ?>" class="button">
-                <?php esc_html_e( 'Open Pages', 'advanced-schema-extender' ); ?>
-            </a>
-            <a href="<?php echo esc_url( admin_url( 'edit.php' ) ); ?>" class="button">
-                <?php esc_html_e( 'Open Posts', 'advanced-schema-extender' ); ?>
-            </a>
-        </p>
         <?php
     }
 
