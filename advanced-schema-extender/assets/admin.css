@@ -1,6 +1,6 @@
 /* =================================================================
  * Advanced Schema Extender for Yoast
- * Admin stylesheet (v3.0.4)
+ * Admin stylesheet (v3.0.5)
  * Loaded on: settings_page_advanced-schema-extender, post.php, post-new.php
  * ================================================================= */
 
@@ -468,7 +468,7 @@ input[name*="[ml_locations]"][name$="[geo_lng]"] {
     fill: var(--ase-highlight);
 }
 
-.ase-wrap .ase-topbar h1 {
+.ase-wrap .ase-page-title {
     display: block;
     margin: 0;
     color: var(--ase-white);
@@ -699,35 +699,6 @@ input[name*="[ml_locations]"][name$="[geo_lng]"] {
     background: rgba(47, 111, 170, 0.06);
 }
 
-.ase-wrap .notice {
-    position: relative;
-    overflow: hidden;
-    border-color: var(--ase-border);
-    border-left-width: 1px;
-    border-radius: 3px;
-    box-shadow: var(--ase-shadow);
-}
-
-.ase-wrap .notice::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 18px 18px 0 0;
-    border-color: var(--ase-primary) transparent transparent transparent;
-}
-
-.ase-wrap .notice-error::before {
-    border-top-color: var(--ase-highlight);
-}
-
-.ase-wrap .notice-success::before {
-    border-top-color: var(--ase-success);
-}
-
 .ase-ie-panel h2 {
     margin-bottom: 16px;
     border-bottom-color: var(--ase-border);
@@ -746,6 +717,17 @@ input[name*="[ml_locations]"][name$="[geo_lng]"] {
     text-align: center;
 }
 
+.ase-credit a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.ase-credit a:hover,
+.ase-credit a:focus {
+    color: var(--ase-muted);
+    text-decoration: underline;
+}
+
 @media (max-width: 782px) {
     .ase-topbar {
         align-items: flex-start;
@@ -753,7 +735,7 @@ input[name*="[ml_locations]"][name$="[geo_lng]"] {
         background-position: right 14px top 14px;
     }
 
-    .ase-wrap .ase-topbar h1 {
+    .ase-wrap .ase-page-title {
         padding-right: 72px;
         font-size: 16px;
     }
