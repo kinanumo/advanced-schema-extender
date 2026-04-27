@@ -3,7 +3,7 @@
  * Plugin Name:       Advanced Schema Extender for Yoast
  * Plugin URI:        https://kinanumo.com
  * Description:       Extends your site schema graph with Organization enrichment, multi-location LocalBusiness support, and a per-post FAQ builder.
- * Version:           3.0.6
+ * Version:           3.0.7
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Kendrick Omar Salting
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'ASE_VERSION',    '3.0.6' );
+define( 'ASE_VERSION',    '3.0.7' );
 define( 'ASE_FILE',       __FILE__ );
 define( 'ASE_DIR',        plugin_dir_path( __FILE__ ) );
 define( 'ASE_URL',        plugin_dir_url( __FILE__ ) );
@@ -845,7 +845,7 @@ JS;
             $this->default_settings()
         );
         ?>
-        <h1 class="screen-reader-text"><?php esc_html_e( 'Advanced Schema Extender for Yoast', 'advanced-schema-extender' ); ?></h1>
+        <?php $this->render_settings_notice_area(); ?>
         <div class="wrap ase-wrap">
             <div class="ase-page-shell">
                 <div class="ase-topbar">
@@ -857,7 +857,7 @@ JS;
                                 <path class="ase-brand-spark" d="M43.9834 3.92285L47.3975 1.96191L49.8018 6.10645L46.3877 8.06738L49.8018 10.0293L47.3975 14.1738L43.9834 12.2119V16.1348H39.1748V12.2119L35.7607 14.1738L33.3564 10.0293L36.7695 8.06738L33.3564 6.10645L35.7607 1.96191L39.1748 3.92285V0H43.9834V3.92285Z" />
                             </svg>
                         </span>
-                        <span class="ase-page-title"><?php esc_html_e( 'Advanced Schema Extender for Yoast', 'advanced-schema-extender' ); ?></span>
+                        <span class="ase-page-title" role="heading" aria-level="1"><?php esc_html_e( 'Advanced Schema Extender for Yoast', 'advanced-schema-extender' ); ?></span>
                     </div>
                     <span class="ase-version">v<?php echo esc_html( ASE_VERSION ); ?></span>
                 </div>
@@ -915,6 +915,30 @@ JS;
             </div>
         </div>
         <?php
+    }
+
+    private function render_settings_notice_area(): void {
+        ob_start();
+
+        if (
+            isset( $_GET['settings-updated'] )
+            && 'true' === sanitize_text_field( wp_unslash( $_GET['settings-updated'] ) )
+        ) {
+            ?>
+            <div class="notice notice-success settings-error is-dismissible ase-settings-updated">
+                <p><strong><?php esc_html_e( 'Settings saved.', 'advanced-schema-extender' ); ?></strong></p>
+            </div>
+            <?php
+        }
+
+        settings_errors( ASE_OPTION_KEY );
+
+        $notices = trim( (string) ob_get_clean() );
+        if ( '' === $notices ) {
+            return;
+        }
+
+        echo '<div class="ase-settings-notices">' . $notices . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     }
 
     /* ------------------------ Status table ---------------------------- */

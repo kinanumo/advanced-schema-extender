@@ -1,6 +1,6 @@
 /* =================================================================
  * Advanced Schema Extender for Yoast
- * Admin stylesheet (v3.0.6)
+ * Admin stylesheet (v3.0.7)
  * Loaded on: settings_page_advanced-schema-extender, post.php, post-new.php
  * ================================================================= */
 
@@ -385,6 +385,16 @@ input[name*="[ml_locations]"][name$="[geo_lng]"] {
 
 /* ---------- Notices ---------- */
 .ase-wrap .notice { margin: 12px 0 18px; }
+.ase-settings-notices {
+    max-width: 1100px;
+    margin: 18px 0 0;
+}
+.ase-settings-notices .notice {
+    margin: 0 0 14px;
+}
+body.settings_page_advanced-schema-extender #setting-error-settings_updated {
+    display: none !important;
+}
 
 /* ---------- Responsive ---------- */
 @media (max-width: 782px) {
