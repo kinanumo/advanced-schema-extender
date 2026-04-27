@@ -1,6 +1,6 @@
 /* =================================================================
  * Advanced Schema Extender for Yoast
- * Admin stylesheet (v3.0.5)
+ * Admin stylesheet (v3.0.6)
  * Loaded on: settings_page_advanced-schema-extender, post.php, post-new.php
  * ================================================================= */
 
@@ -699,6 +699,40 @@ input[name*="[ml_locations]"][name$="[geo_lng]"] {
     background: rgba(47, 111, 170, 0.06);
 }
 
+.ase-card-body p.submit {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0;
+}
+
+.ase-sticky-save-bar {
+    position: fixed;
+    right: auto;
+    bottom: 18px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 14px;
+    box-sizing: border-box;
+    padding: 12px 18px;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid var(--ase-border);
+    border-radius: 4px;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(5px);
+}
+
+.ase-sticky-save-bar[hidden] {
+    display: none;
+}
+
+.ase-sticky-save-text {
+    color: var(--ase-muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
 .ase-ie-panel h2 {
     margin-bottom: 16px;
     border-bottom-color: var(--ase-border);
@@ -742,6 +776,15 @@ input[name*="[ml_locations]"][name$="[geo_lng]"] {
 
     .ase-page-body {
         padding: 16px;
+    }
+
+    .ase-sticky-save-bar {
+        bottom: 10px;
+        padding: 10px 12px;
+    }
+
+    .ase-sticky-save-text {
+        display: none;
     }
 }
 

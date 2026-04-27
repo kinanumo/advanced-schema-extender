@@ -3,7 +3,7 @@
  * Plugin Name:       Advanced Schema Extender for Yoast
  * Plugin URI:        https://kinanumo.com
  * Description:       Extends your site schema graph with Organization enrichment, multi-location LocalBusiness support, and a per-post FAQ builder.
- * Version:           3.0.5
+ * Version:           3.0.6
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Kendrick Omar Salting
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'ASE_VERSION',    '3.0.5' );
+define( 'ASE_VERSION',    '3.0.6' );
 define( 'ASE_FILE',       __FILE__ );
 define( 'ASE_DIR',        plugin_dir_path( __FILE__ ) );
 define( 'ASE_URL',        plugin_dir_url( __FILE__ ) );
@@ -742,6 +742,87 @@ final class ASE_Agency_UI {
     toggleLocalBusinessOnlyRows();
 
 })(jQuery);
+
+(function() {
+    'use strict';
+
+    function initStickySaveBar() {
+        var form = document.getElementById('ase-settings-form');
+        var stickyBar = document.getElementById('ase-sticky-save-bar');
+        var originalSubmit = document.getElementById('ase-save-settings');
+        var originalSubmitArea = originalSubmit ? originalSubmit.closest('p.submit') : null;
+        var pageBody = stickyBar ? stickyBar.closest('.ase-page-body') : null;
+
+        if ( ! form || ! stickyBar || ! originalSubmit || ! originalSubmitArea || ! pageBody ) {
+            return;
+        }
+
+        var isDirty = false;
+        var isOriginalVisible = false;
+
+        function syncStickyBar() {
+            updateStickyBarBounds();
+            stickyBar.hidden = ! isDirty || isOriginalVisible;
+        }
+
+        function updateStickyBarBounds() {
+            var rect = pageBody.getBoundingClientRect();
+            var inset = window.innerWidth <= 782 ? 16 : 22;
+            stickyBar.style.left = (rect.left + inset) + 'px';
+            stickyBar.style.width = Math.max(rect.width - (inset * 2), 0) + 'px';
+        }
+
+        function updateOriginalVisibility() {
+            var rect = originalSubmitArea.getBoundingClientRect();
+            isOriginalVisible = rect.top < window.innerHeight && rect.bottom > 0;
+            syncStickyBar();
+        }
+
+        function markDirty() {
+            isDirty = true;
+            syncStickyBar();
+        }
+
+        form.addEventListener('input', markDirty);
+        form.addEventListener('change', markDirty);
+
+        document.addEventListener('click', function(event) {
+            if ( event.target.closest('.ase-add-location, .ase-remove-location, .ase-add-faq, .ase-remove-faq, .ase-generate-opening-hours, .ase-clear-logo, .ase-pick-logo') ) {
+                markDirty();
+            }
+        });
+
+        form.addEventListener('submit', function() {
+            stickyBar.hidden = true;
+        });
+
+        if ( 'IntersectionObserver' in window ) {
+            var observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    isOriginalVisible = entry.isIntersecting;
+                    syncStickyBar();
+                });
+            }, { threshold: 0.75 });
+
+            observer.observe(originalSubmitArea);
+            updateOriginalVisibility();
+        } else {
+            window.addEventListener('scroll', updateOriginalVisibility, { passive: true });
+            window.addEventListener('resize', updateOriginalVisibility);
+            updateOriginalVisibility();
+        }
+
+        window.addEventListener('resize', updateStickyBarBounds);
+        window.addEventListener('scroll', updateStickyBarBounds, { passive: true });
+        updateStickyBarBounds();
+    }
+
+    if ( document.readyState === 'loading' ) {
+        document.addEventListener('DOMContentLoaded', initStickySaveBar);
+    } else {
+        initStickySaveBar();
+    }
+})();
 JS;
     }
 
@@ -786,7 +867,7 @@ JS;
 
                     <h2 class="ase-section-h2"><?php esc_html_e( 'Organization & LocalBusiness', 'advanced-schema-extender' ); ?></h2>
 
-                    <form method="post" action="options.php">
+                    <form id="ase-settings-form" method="post" action="options.php">
                         <?php settings_fields( ASE_OPTION_KEY ); ?>
 
                         <div class="ase-card">
@@ -812,10 +893,17 @@ JS;
                                 </h2>
                                 <?php $this->render_compat_fields( $settings ); ?>
 
-                                <?php submit_button( __( 'Save Settings', 'advanced-schema-extender' ) ); ?>
+                                <?php submit_button( __( 'Save Settings', 'advanced-schema-extender' ), 'primary', 'ase-save-settings' ); ?>
                             </div>
                         </div>
                     </form>
+
+                    <div id="ase-sticky-save-bar" class="ase-sticky-save-bar" hidden>
+                        <span class="ase-sticky-save-text"><?php esc_html_e( 'Unsaved changes', 'advanced-schema-extender' ); ?></span>
+                        <button type="submit" class="button button-primary" form="ase-settings-form">
+                            <?php esc_html_e( 'Save Settings', 'advanced-schema-extender' ); ?>
+                        </button>
+                    </div>
 
                     <?php $this->render_import_export_panel( $settings ); ?>
 
