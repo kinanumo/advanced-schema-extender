@@ -1,6 +1,6 @@
 /* =================================================================
  * Advanced Schema Extender for Yoast
- * Admin stylesheet (v3.0.7)
+ * Admin stylesheet (v3.0.8)
  * Loaded on: settings_page_advanced-schema-extender, post.php, post-new.php
  * ================================================================= */
 
@@ -54,6 +54,7 @@
     padding: 14px 18px;
     margin: 0 0 22px;
     box-shadow: 0 1px 1px rgba(0,0,0,.04);
+    overflow-x: auto;
 }
 .ase-status-title {
     font-size: 13px;
@@ -63,7 +64,11 @@
     color: #50575e;
     margin: 0 0 8px;
 }
-.ase-status-table { width: 100%; border-collapse: collapse; }
+.ase-status-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
 .ase-status-table th,
 .ase-status-table td {
     padding: 8px 10px;
@@ -71,7 +76,18 @@
     font-size: 13px;
     border-bottom: 1px solid #f0f0f1;
     vertical-align: middle;
+    overflow-wrap: anywhere;
 }
+.ase-status-table th:nth-child(1),
+.ase-status-table td:nth-child(1) { width: 18%; }
+.ase-status-table th:nth-child(2),
+.ase-status-table td:nth-child(2),
+.ase-status-table th:nth-child(3),
+.ase-status-table td:nth-child(3),
+.ase-status-table th:nth-child(4),
+.ase-status-table td:nth-child(4) { width: 22%; }
+.ase-status-table th:nth-child(5),
+.ase-status-table td:nth-child(5) { width: 16%; }
 .ase-status-table thead th {
     background: #f6f7f7;
     font-weight: 600;
@@ -786,6 +802,58 @@ body.settings_page_advanced-schema-extender #setting-error-settings_updated {
 
     .ase-page-body {
         padding: 16px;
+    }
+
+    .ase-status-wrap {
+        padding: 12px;
+    }
+
+    .ase-status-table {
+        min-width: 720px;
+    }
+
+    .ase-card-body .form-table,
+    .ase-card-body .form-table tbody,
+    .ase-card-body .form-table tr,
+    .ase-card-body .form-table th,
+    .ase-card-body .form-table td,
+    .ase-location-body .form-table,
+    .ase-location-body .form-table tbody,
+    .ase-location-body .form-table tr,
+    .ase-location-body .form-table th,
+    .ase-location-body .form-table td {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .ase-card-body .form-table th,
+    .ase-location-body .form-table th {
+        padding: 12px 0 4px;
+    }
+
+    .ase-card-body .form-table td,
+    .ase-location-body .form-table td {
+        padding: 0 0 10px;
+    }
+
+    .ase-wrap input.regular-text,
+    .ase-wrap input.large-text,
+    .ase-wrap textarea,
+    .ase-wrap select {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .ase-subtype-grid,
+    .ase-logo-picker {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .ase-generate-opening-hours {
+        margin-left: 0;
     }
 
     .ase-sticky-save-bar {
