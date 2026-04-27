@@ -3,7 +3,7 @@
  * Plugin Name:       Advanced Schema Extender for Yoast
  * Plugin URI:        https://kinanumo.com
  * Description:       Extends your site schema graph with Organization enrichment, multi-location LocalBusiness support, and a per-post FAQ builder.
- * Version:           3.0.3
+ * Version:           3.0.4
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Kendrick Omar Salting
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'ASE_VERSION',    '3.0.3' );
+define( 'ASE_VERSION',    '3.0.4' );
 define( 'ASE_FILE',       __FILE__ );
 define( 'ASE_DIR',        plugin_dir_path( __FILE__ ) );
 define( 'ASE_URL',        plugin_dir_url( __FILE__ ) );
@@ -765,49 +765,64 @@ JS;
         );
         ?>
         <div class="wrap ase-wrap">
-            <h1>
-                <?php esc_html_e( 'Advanced Schema Extender for Yoast', 'advanced-schema-extender' ); ?>
-                <span class="ase-version">v<?php echo esc_html( ASE_VERSION ); ?></span>
-            </h1>
-
-            <?php settings_errors( ASE_OPTION_KEY ); ?>
-
-            <?php $this->render_status_table( $settings ); ?>
-
-            <h2 class="ase-section-h2"><?php esc_html_e( 'Organization & LocalBusiness', 'advanced-schema-extender' ); ?></h2>
-
-            <form method="post" action="options.php">
-                <?php settings_fields( ASE_OPTION_KEY ); ?>
-
-                <div class="ase-card">
-                    <div class="ase-card-body">
-                        <p class="description">
-                            <?php esc_html_e( 'These fields enrich your Organization schema node. Empty fields are skipped. Toggle “Treat as LocalBusiness” to add address, hours, and geo data.', 'advanced-schema-extender' ); ?>
-                        </p>
-
-                        <?php $this->render_org_fields( $settings ); ?>
-
-                        <h2 class="ase-section-h2 ase-section-h2--inner">
-                            <?php esc_html_e( 'Multiple Locations (Optional)', 'advanced-schema-extender' ); ?>
-                        </h2>
-                        <?php $this->render_locations_section( $settings ); ?>
-
-                        <h2 class="ase-section-h2 ase-section-h2--inner">
-                            <?php esc_html_e( 'FAQ Builder (Per-Post)', 'advanced-schema-extender' ); ?>
-                        </h2>
-                        <?php $this->render_faq_settings( $settings ); ?>
-
-                        <h2 class="ase-section-h2 ase-section-h2--inner">
-                            <?php esc_html_e( 'Compatibility', 'advanced-schema-extender' ); ?>
-                        </h2>
-                        <?php $this->render_compat_fields( $settings ); ?>
-
-                        <?php submit_button( __( 'Save Settings', 'advanced-schema-extender' ) ); ?>
+            <div class="ase-page-shell">
+                <div class="ase-topbar">
+                    <div class="ase-topbar-title">
+                        <span class="ase-brand-mark" aria-hidden="true">
+                            <svg viewBox="0 0 51 55" focusable="false" role="img">
+                                <path d="M0 26.7627L17.4805 53.5254H29.7881L12.3076 26.7627L29.7881 0H17.4805L0 26.7627Z" />
+                                <path d="M36.9248 53.5251V19.6753H46.3128V53.5251H36.9248Z" />
+                                <path class="ase-brand-spark" d="M43.9834 3.92285L47.3975 1.96191L49.8018 6.10645L46.3877 8.06738L49.8018 10.0293L47.3975 14.1738L43.9834 12.2119V16.1348H39.1748V12.2119L35.7607 14.1738L33.3564 10.0293L36.7695 8.06738L33.3564 6.10645L35.7607 1.96191L39.1748 3.92285V0H43.9834V3.92285Z" />
+                            </svg>
+                        </span>
+                        <h1><?php esc_html_e( 'Advanced Schema Extender for Yoast', 'advanced-schema-extender' ); ?></h1>
                     </div>
+                    <span class="ase-version">v<?php echo esc_html( ASE_VERSION ); ?></span>
                 </div>
-            </form>
 
-            <?php $this->render_import_export_panel( $settings ); ?>
+                <div class="ase-page-body">
+                    <?php settings_errors( ASE_OPTION_KEY ); ?>
+
+                    <?php $this->render_status_table( $settings ); ?>
+
+                    <h2 class="ase-section-h2"><?php esc_html_e( 'Organization & LocalBusiness', 'advanced-schema-extender' ); ?></h2>
+
+                    <form method="post" action="options.php">
+                        <?php settings_fields( ASE_OPTION_KEY ); ?>
+
+                        <div class="ase-card">
+                            <div class="ase-card-body">
+                                <p class="description">
+                                    <?php esc_html_e( 'These fields enrich your Organization schema node. Empty fields are skipped. Toggle “Treat as LocalBusiness” to add address, hours, and geo data.', 'advanced-schema-extender' ); ?>
+                                </p>
+
+                                <?php $this->render_org_fields( $settings ); ?>
+
+                                <h2 class="ase-section-h2 ase-section-h2--inner">
+                                    <?php esc_html_e( 'Multiple Locations (Optional)', 'advanced-schema-extender' ); ?>
+                                </h2>
+                                <?php $this->render_locations_section( $settings ); ?>
+
+                                <h2 class="ase-section-h2 ase-section-h2--inner">
+                                    <?php esc_html_e( 'FAQ Builder (Per-Post)', 'advanced-schema-extender' ); ?>
+                                </h2>
+                                <?php $this->render_faq_settings( $settings ); ?>
+
+                                <h2 class="ase-section-h2 ase-section-h2--inner">
+                                    <?php esc_html_e( 'Compatibility', 'advanced-schema-extender' ); ?>
+                                </h2>
+                                <?php $this->render_compat_fields( $settings ); ?>
+
+                                <?php submit_button( __( 'Save Settings', 'advanced-schema-extender' ) ); ?>
+                            </div>
+                        </div>
+                    </form>
+
+                    <?php $this->render_import_export_panel( $settings ); ?>
+
+                    <p class="ase-credit"><?php esc_html_e( 'By Kinanumo', 'advanced-schema-extender' ); ?></p>
+                </div>
+            </div>
         </div>
         <?php
     }
