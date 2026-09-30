@@ -35,9 +35,7 @@ Organization enrichment runs when Yoast's Site Representation is set to **Organi
 
 If this plugin is useful, you can support its development with the button below.
 
-```html
-<script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="neirdkc" data-color="#FF5F5F" data-emoji="🍕"  data-font="Cookie" data-text="Buy me a pizza" data-outline-color="#000000" data-font-color="#ffffff" data-coffee-color="#FFDD00" ></script>
-```
+<a href="https://www.buymeacoffee.com/neirdkc" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-red.png" alt="Buy Me a Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
 ## License
 

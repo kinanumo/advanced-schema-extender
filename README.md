@@ -18,7 +18,7 @@ Copy the `advanced-schema-extender/` directory into `wp-content/plugins/`, activ
 
 ## Support
 
-[Buy me a pizza](https://www.buymeacoffee.com/neirdkc).
+<a href="https://www.buymeacoffee.com/neirdkc" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-red.png" alt="Buy Me a Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
 ## License
 
