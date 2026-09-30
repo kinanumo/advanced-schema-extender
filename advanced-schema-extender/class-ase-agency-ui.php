@@ -996,7 +996,7 @@ JS;
 
 					<p class="ase-credit">
 						<?php esc_html_e( 'By ', 'advanced-schema-extender' ); ?>
-						<a href="<?php echo esc_url( 'https://kinanumo.com' ); ?>" rel="sponsored"><?php esc_html_e( 'Kinanumo Dev Services', 'advanced-schema-extender' ); ?></a>
+						<a href="<?php echo esc_url( 'https://neirdkc.xyz' ); ?>" rel="sponsored"><?php esc_html_e( 'neirDKC', 'advanced-schema-extender' ); ?></a>
 					</p>
 				</div>
 			</div>
