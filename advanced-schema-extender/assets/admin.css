@@ -7,76 +7,76 @@
 /* ---------- Page chrome ---------- */
 .ase-wrap          { max-width: 1100px; }
 .ase-wrap h1 {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 6px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 6px;
 }
 .ase-wrap .ase-version {
-    font-size: 12px;
-    font-weight: 500;
-    color: #50575e;
-    background: #f0f0f1;
-    padding: 2px 8px;
-    border-radius: 10px;
-    line-height: 1.6;
+	font-size: 12px;
+	font-weight: 500;
+	color: #50575e;
+	background: #f0f0f1;
+	padding: 2px 8px;
+	border-radius: 10px;
+	line-height: 1.6;
 }
 .ase-wrap > .description { margin: 0 0 18px; color: #646970; }
 
 /* ---------- Section h2 (outside / inside card) ---------- */
 .ase-section-h2 {
-    font-size: 15px;
-    font-weight: 600;
-    margin: 22px 0 8px;
-    padding: 0;
-    color: #1d2327;
+	font-size: 15px;
+	font-weight: 600;
+	margin: 22px 0 8px;
+	padding: 0;
+	color: #1d2327;
 }
 .ase-section-h2--inner {
-    margin-top: 28px;
-    padding-top: 14px;
-    border-top: 1px solid #f0f0f1;
+	margin-top: 28px;
+	padding-top: 14px;
+	border-top: 1px solid #f0f0f1;
 }
 .ase-card-body > .ase-section-h2--inner:first-of-type {
-    border-top: 0;
-    padding-top: 0;
-    margin-top: 18px;
+	border-top: 0;
+	padding-top: 0;
+	margin-top: 18px;
 }
 
 /* ---------- Status table
-   .ase-status is an alias kept for forward-compat; .ase-status-wrap is
-   what the PHP currently outputs.  Both share these declarations.
-   ------------------------------------------------------------------ */
+	.ase-status is an alias kept for forward-compat; .ase-status-wrap is
+	what the PHP currently outputs.  Both share these declarations.
+	------------------------------------------------------------------ */
 .ase-status-wrap,
 .ase-status {
-    background: #fff;
-    border: 1px solid #c3c4c7;
-    border-radius: 6px;
-    padding: 14px 18px;
-    margin: 0 0 22px;
-    box-shadow: 0 1px 1px rgba(0,0,0,.04);
-    overflow-x: auto;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+	padding: 14px 18px;
+	margin: 0 0 22px;
+	box-shadow: 0 1px 1px rgba(0,0,0,.04);
+	overflow-x: auto;
 }
 .ase-status-title {
-    font-size: 13px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-    color: #50575e;
-    margin: 0 0 8px;
+	font-size: 13px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .04em;
+	color: #50575e;
+	margin: 0 0 8px;
 }
 .ase-status-table {
-    width: 100%;
-    table-layout: fixed;
-    border-collapse: collapse;
+	width: 100%;
+	table-layout: fixed;
+	border-collapse: collapse;
 }
 .ase-status-table th,
 .ase-status-table td {
-    padding: 8px 10px;
-    text-align: left;
-    font-size: 13px;
-    border-bottom: 1px solid #f0f0f1;
-    vertical-align: middle;
-    overflow-wrap: anywhere;
+	padding: 8px 10px;
+	text-align: left;
+	font-size: 13px;
+	border-bottom: 1px solid #f0f0f1;
+	vertical-align: middle;
+	overflow-wrap: anywhere;
 }
 .ase-status-table th:nth-child(1),
 .ase-status-table td:nth-child(1) { width: 18%; }
@@ -89,17 +89,17 @@
 .ase-status-table th:nth-child(5),
 .ase-status-table td:nth-child(5) { width: 16%; }
 .ase-status-table thead th {
-    background: #f6f7f7;
-    font-weight: 600;
-    color: #1d2327;
+	background: #f6f7f7;
+	font-weight: 600;
+	color: #1d2327;
 }
 .ase-status-table tbody tr:last-child td { border-bottom: 0; }
 /* small footnote below the table */
 .ase-status-note {
-    margin: 10px 0 0;
-    font-size: 12px;
-    color: #646970;
-    font-style: italic;
+	margin: 10px 0 0;
+	font-size: 12px;
+	color: #646970;
+	font-style: italic;
 }
 
 .ase-val-baseline  { color: #646970; }
@@ -108,21 +108,21 @@
 .ase-val-empty     { color: #a7aaad; font-style: italic; }
 
 /* ---------- Source / status badges
-   Usage:  <span class="ase-badge ase-badge--{variant}">
-   Variants: baseline | extender | merged | good | warn
-   .ase-good / .ase-warn may also be used standalone (no .ase-badge base).
-   ------------------------------------------------------------------ */
+	Usage:  <span class="ase-badge ase-badge--{variant}">
+	Variants: baseline | extender | merged | good | warn
+	.ase-good / .ase-warn may also be used standalone (no .ase-badge base).
+	------------------------------------------------------------------ */
 .ase-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .03em;
-    border-radius: 10px;
-    line-height: 1.6;
-    border: 1px solid transparent;
-    white-space: nowrap;
+	display: inline-block;
+	padding: 2px 8px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .03em;
+	border-radius: 10px;
+	line-height: 1.6;
+	border: 1px solid transparent;
+	white-space: nowrap;
 }
 .ase-badge--baseline { background: #e6f0fa; color: #1d4f8c; border-color: #c5dcf2; }
 .ase-badge--extender,
@@ -134,59 +134,59 @@
 
 /* ---------- Boxed cards ---------- */
 .ase-card {
-    background: #fff;
-    border: 1px solid #c3c4c7;
-    border-radius: 6px;
-    margin: 0 0 20px;
-    box-shadow: 0 1px 1px rgba(0,0,0,.04);
-    overflow: hidden;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+	margin: 0 0 20px;
+	box-shadow: 0 1px 1px rgba(0,0,0,.04);
+	overflow: hidden;
 }
 .ase-card-header {
-    padding: 14px 20px;
-    background: #f8f9fa;
-    border-bottom: 1px solid #e5e5e5;
+	padding: 14px 20px;
+	background: #f8f9fa;
+	border-bottom: 1px solid #e5e5e5;
 }
 .ase-card-header h2 {
-    margin: 0 0 2px;
-    font-size: 14px;
-    font-weight: 600;
+	margin: 0 0 2px;
+	font-size: 14px;
+	font-weight: 600;
 }
 .ase-card-header .description {
-    margin: 0;
-    font-size: 12.5px;
-    color: #646970;
+	margin: 0;
+	font-size: 12.5px;
+	color: #646970;
 }
 .ase-card-body { padding: 14px 20px; }
 .ase-card-body .form-table th {
-    width: 200px;
-    padding-left: 0;
-    font-weight: 500;
+	width: 200px;
+	padding-left: 0;
+	font-weight: 500;
 }
 .ase-card-body p.submit {
-    margin-top: 22px;
-    padding-top: 16px;
-    border-top: 1px solid #f0f0f1;
+	margin-top: 22px;
+	padding-top: 16px;
+	border-top: 1px solid #f0f0f1;
 }
 
 /* ---------- Section divider row inside form-table ---------- */
 .ase-row-divider th {
-    background: #f6f7f7;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-    color: #50575e;
-    padding: 8px 12px !important;
-    width: auto !important;
-    border-radius: 4px;
+	background: #f6f7f7;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .04em;
+	color: #50575e;
+	padding: 8px 12px !important;
+	width: auto !important;
+	border-radius: 4px;
 }
 
 /* ---------- LB subtype dropdowns ---------- */
 .ase-subtype-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
 }
 .ase-hidden-row { display: none; }
 .ase-generate-opening-hours { margin-left: 8px; }
@@ -194,55 +194,55 @@
 
 /* ---------- Logo picker ---------- */
 .ase-logo-picker {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+	display: flex;
+	align-items: center;
+	gap: 12px;
 }
 #ase-logo-preview {
-    max-width: 96px;
-    max-height: 96px;
-    border: 1px solid #dcdcde;
-    border-radius: 4px;
-    padding: 4px;
-    background: #fff;
-    display: none;
+	max-width: 96px;
+	max-height: 96px;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	padding: 4px;
+	background: #fff;
+	display: none;
 }
 .ase-clear-logo {
-    display: none;
-    color: #b32d2e !important;
-    text-decoration: none;
+	display: none;
+	color: #b32d2e !important;
+	text-decoration: none;
 }
 
 /* ---------- Multi-location cards ---------- */
 #ase-locations-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	margin-bottom: 12px;
 }
 .ase-location-card {
-    border: 1px solid #dcdcde;
-    border-radius: 5px;
-    background: #fafafa;
+	border: 1px solid #dcdcde;
+	border-radius: 5px;
+	background: #fafafa;
 }
 .ase-location-card.is-collapsed .ase-location-body { display: none; }
 .ase-location-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    background: #f0f0f1;
-    border-bottom: 1px solid #dcdcde;
-    border-radius: 5px 5px 0 0;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 14px;
+	background: #f0f0f1;
+	border-bottom: 1px solid #dcdcde;
+	border-radius: 5px 5px 0 0;
 }
 .ase-location-card.is-collapsed .ase-location-head {
-    border-bottom: 0;
-    border-radius: 5px;
+	border-bottom: 0;
+	border-radius: 5px;
 }
 .ase-location-title {
-    flex: 1;
-    font-weight: 600;
-    font-size: 13px;
+	flex: 1;
+	font-weight: 600;
+	font-size: 13px;
 }
 .ase-location-head .button-link { font-size: 12px; }
 .ase-remove-location { color: #b32d2e !important; }
@@ -251,143 +251,143 @@
 .ase-location-body .form-table th { width: 170px; padding-left: 0; }
 /* Two-column inner grid: pair adjacent field rows on wide screens */
 @media (min-width: 960px) {
-    .ase-location-body .form-table {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0 24px;
-    }
-    /* Divider rows and textarea rows always span both columns */
-    .ase-location-body .form-table .ase-row-divider,
-    .ase-location-body .form-table tr:has(textarea) {
-        grid-column: 1 / -1;
-    }
-    /* form-table uses <tr> which becomes a grid item — let th/td inline */
-    .ase-location-body .form-table tr  { display: contents; }
-    .ase-location-body .form-table th,
-    .ase-location-body .form-table td  { padding: 6px 0; }
-    .ase-location-body .form-table th  { font-size: 12.5px; font-weight: 500; color: #50575e; }
+	.ase-location-body .form-table {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0 24px;
+	}
+	/* Divider rows and textarea rows always span both columns */
+	.ase-location-body .form-table .ase-row-divider,
+	.ase-location-body .form-table tr:has(textarea) {
+		grid-column: 1 / -1;
+	}
+	/* form-table uses <tr> which becomes a grid item — let th/td inline */
+	.ase-location-body .form-table tr  { display: contents; }
+	.ase-location-body .form-table th,
+	.ase-location-body .form-table td  { padding: 6px 0; }
+	.ase-location-body .form-table th  { font-size: 12.5px; font-weight: 500; color: #50575e; }
 }
 
 /* ---------- Location card textarea fields ---------- */
 .ase-location-body textarea {
-    min-height: 72px;
-    width: 100%;
-    box-sizing: border-box;
+	min-height: 72px;
+	width: 100%;
+	box-sizing: border-box;
 }
 /* JSON fields need a bit more vertical room for readability */
 .ase-location-body textarea.code {
-    min-height: 100px;
-    font-family: Menlo, Consolas, monospace;
-    font-size: 12px;
-    background: #f6f7f7;
+	min-height: 100px;
+	font-family: Menlo, Consolas, monospace;
+	font-size: 12px;
+	background: #f6f7f7;
 }
 
 /* ---------- FAQ post-type selector ---------- */
 .ase-faq-pt-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 20px;
-    margin-bottom: 4px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px 20px;
+	margin-bottom: 4px;
 }
 .ase-faq-pt-list label {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 13px;
-    font-weight: normal;
-    cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	font-size: 13px;
+	font-weight: normal;
+	cursor: pointer;
 }
 .ase-faq-pt-list code {
-    font-size: 11px;
-    color: #646970;
+	font-size: 11px;
+	color: #646970;
 }
 
 /* ---------- FAQ rows (metabox) ---------- */
 #ase-faq-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin: 8px 0 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin: 8px 0 12px;
 }
 .ase-faq-row {
-    background: #fff;
-    border: 1px solid #dcdcde;
-    border-radius: 5px;
-    padding: 14px;
-    display: grid;
-    gap: 10px;
-    box-shadow: 0 1px 1px rgba(0,0,0,.03);
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 5px;
+	padding: 14px;
+	display: grid;
+	gap: 10px;
+	box-shadow: 0 1px 1px rgba(0,0,0,.03);
 }
 .ase-faq-row label {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: #1d2327;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	font-size: 12.5px;
+	font-weight: 600;
+	color: #1d2327;
 }
 .ase-faq-row input[type="text"],
 .ase-faq-row textarea {
-    width: 100%;
-    box-sizing: border-box;
+	width: 100%;
+	box-sizing: border-box;
 }
 /* Answers need room for multi-line content */
 .ase-faq-row textarea {
-    min-height: 80px;
-    resize: vertical;
+	min-height: 80px;
+	resize: vertical;
 }
 .ase-remove-faq {
-    justify-self: end;
-    color: #b32d2e !important;
-    font-size: 12px;
-    text-decoration: none;
+	justify-self: end;
+	color: #b32d2e !important;
+	font-size: 12px;
+	text-decoration: none;
 }
 /* FAQ metabox sits inside a white WP postbox — slightly dim the row bg */
 #ase_faq_builder .ase-faq-row { background: #f9f9f9; }
 
 /* ---------- Import / Export panel ---------- */
 .ase-ie-panel {
-    background: #fff;
-    border: 1px solid #c3c4c7;
-    border-radius: 6px;
-    padding: 16px 20px;
-    margin: 24px 0 0;
-    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+	padding: 16px 20px;
+	margin: 24px 0 0;
+	box-shadow: 0 1px 1px rgba(0,0,0,.04);
 }
 .ase-ie-panel h2 {
-    margin: 0 0 12px;
-    font-size: 14px;
-    border-bottom: 1px solid #e5e5e5;
-    padding-bottom: 10px;
+	margin: 0 0 12px;
+	font-size: 14px;
+	border-bottom: 1px solid #e5e5e5;
+	padding-bottom: 10px;
 }
 /* Two-column responsive grid */
 .ase-ie-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 24px;
 }
 .ase-ie-col h3 {
-    margin: 0 0 6px;
-    font-size: 13px;
-    font-weight: 600;
+	margin: 0 0 6px;
+	font-size: 13px;
+	font-weight: 600;
 }
 .ase-ie-col p.description { margin: 0 0 8px; }
 #ase-export-json {
-    width: 100%;
-    min-height: 160px;
-    font-family: Menlo, Consolas, monospace;
-    font-size: 12px;
-    background: #f6f7f7;
-    resize: vertical;
-    box-sizing: border-box;
+	width: 100%;
+	min-height: 160px;
+	font-family: Menlo, Consolas, monospace;
+	font-size: 12px;
+	background: #f6f7f7;
+	resize: vertical;
+	box-sizing: border-box;
 }
 .ase-copy-export { margin-top: 6px; }
 
 /* ---------- JSON / textarea in settings form ---------- */
 #ase-opening-hours,
 #ase-service-area {
-    min-height: 80px;
-    resize: vertical;
+	min-height: 80px;
+	resize: vertical;
 }
 #ase-opening-hours { font-family: Menlo, Consolas, monospace; font-size: 12px; }
 #ase-geo-lat,
@@ -396,32 +396,32 @@ input[name="advanced_schema_extender_settings[geo_lat]"],
 input[name="advanced_schema_extender_settings[geo_lng]"],
 input[name*="[ml_locations]"][name$="[geo_lat]"],
 input[name*="[ml_locations]"][name$="[geo_lng]"] {
-    width: 130px;
+	width: 130px;
 }
 
 /* ---------- Notices ---------- */
 .ase-wrap .notice { margin: 12px 0 18px; }
 .ase-settings-notices {
-    max-width: 1100px;
-    margin: 18px 0 0;
+	max-width: 1100px;
+	margin: 18px 0 0;
 }
 .ase-settings-notices .notice {
-    margin: 0 0 14px;
+	margin: 0 0 14px;
 }
 body.settings_page_advanced-schema-extender #setting-error-settings_updated {
-    display: none !important;
+	display: none !important;
 }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 782px) {
-    .ase-ie-grid            { grid-template-columns: 1fr; }
-    .ase-card-body .form-table th { width: auto; padding-bottom: 0; }
-    .ase-location-head      { flex-wrap: wrap; }
-    /* Collapse location inner grid back to single column */
-    .ase-location-body .form-table { display: table; }
-    .ase-location-body .form-table tr { display: table-row; }
-    .ase-location-body .form-table th,
-    .ase-location-body .form-table td { display: table-cell; }
+	.ase-ie-grid            { grid-template-columns: 1fr; }
+	.ase-card-body .form-table th { width: auto; padding-bottom: 0; }
+	.ase-location-head      { flex-wrap: wrap; }
+	/* Collapse location inner grid back to single column */
+	.ase-location-body .form-table { display: table; }
+	.ase-location-body .form-table tr { display: table-row; }
+	.ase-location-body .form-table th,
+	.ase-location-body .form-table td { display: table-cell; }
 }
 
 /* =================================================================
@@ -429,128 +429,128 @@ body.settings_page_advanced-schema-extender #setting-error-settings_updated {
  * Quiet WordPress-admin styling based on the Kinanumo brand guide.
  * ================================================================= */
 .ase-wrap {
-    --ase-primary: #2f6faa;
-    --ase-highlight: #cd3700;
-    --ase-default: #333333;
-    --ase-muted: #888888;
-    --ase-border: #e0e0e0;
-    --ase-surface: #f9f9f9;
-    --ase-white: #ffffff;
-    --ase-success: #3a7d44;
-    --ase-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+	--ase-primary: #2f6faa;
+	--ase-highlight: #cd3700;
+	--ase-default: #333333;
+	--ase-muted: #888888;
+	--ase-border: #e0e0e0;
+	--ase-surface: #f9f9f9;
+	--ase-white: #ffffff;
+	--ase-success: #3a7d44;
+	--ase-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 
-    max-width: 1100px;
-    color: var(--ase-default);
-    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	max-width: 1100px;
+	color: var(--ase-default);
+	font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .ase-page-shell {
-    overflow: hidden;
-    margin-top: 18px;
-    background: var(--ase-surface);
-    border: 1px solid var(--ase-border);
-    border-radius: 4px;
-    box-shadow: var(--ase-shadow);
+	overflow: hidden;
+	margin-top: 18px;
+	background: var(--ase-surface);
+	border: 1px solid var(--ase-border);
+	border-radius: 4px;
+	box-shadow: var(--ase-shadow);
 }
 
 .ase-topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 18px;
-    min-height: 58px;
-    padding: 14px 22px;
-    background-color: var(--ase-primary);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='40'%3E%3Cpolygon points='6,2 14,15 0,15' fill='white' fill-opacity='0.13'/%3E%3Cpolygon points='22,5 30,18 14,18' fill='white' fill-opacity='0.09'/%3E%3Cpolygon points='38,0 46,13 30,13' fill='white' fill-opacity='0.11'/%3E%3Cpolygon points='54,3 62,16 46,16' fill='white' fill-opacity='0.07'/%3E%3Cpolygon points='70,1 78,14 62,14' fill='white' fill-opacity='0.05'/%3E%3Cpolygon points='14,20 22,33 6,33' fill='white' fill-opacity='0.07'/%3E%3Cpolygon points='30,17 38,30 22,30' fill='white' fill-opacity='0.05'/%3E%3Cpolygon points='46,19 54,32 38,32' fill='white' fill-opacity='0.04'/%3E%3Cpolygon points='62,18 70,31 54,31' fill='white' fill-opacity='0.03'/%3E%3C/svg%3E");
-    background-position: right 24px center;
-    background-repeat: no-repeat;
-    background-size: 88px 40px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 18px;
+	min-height: 58px;
+	padding: 14px 22px;
+	background-color: var(--ase-primary);
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='40'%3E%3Cpolygon points='6,2 14,15 0,15' fill='white' fill-opacity='0.13'/%3E%3Cpolygon points='22,5 30,18 14,18' fill='white' fill-opacity='0.09'/%3E%3Cpolygon points='38,0 46,13 30,13' fill='white' fill-opacity='0.11'/%3E%3Cpolygon points='54,3 62,16 46,16' fill='white' fill-opacity='0.07'/%3E%3Cpolygon points='70,1 78,14 62,14' fill='white' fill-opacity='0.05'/%3E%3Cpolygon points='14,20 22,33 6,33' fill='white' fill-opacity='0.07'/%3E%3Cpolygon points='30,17 38,30 22,30' fill='white' fill-opacity='0.05'/%3E%3Cpolygon points='46,19 54,32 38,32' fill='white' fill-opacity='0.04'/%3E%3Cpolygon points='62,18 70,31 54,31' fill='white' fill-opacity='0.03'/%3E%3C/svg%3E");
+	background-position: right 24px center;
+	background-repeat: no-repeat;
+	background-size: 88px 40px;
 }
 
 .ase-topbar-title {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-width: 0;
 }
 
 .ase-brand-mark {
-    display: inline-flex;
-    flex: 0 0 auto;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 24px;
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 24px;
 }
 
 .ase-brand-mark svg {
-    display: block;
-    width: 22px;
-    height: 24px;
-    fill: var(--ase-white);
+	display: block;
+	width: 22px;
+	height: 24px;
+	fill: var(--ase-white);
 }
 
 .ase-brand-mark .ase-brand-spark {
-    fill: var(--ase-highlight);
+	fill: var(--ase-highlight);
 }
 
 .ase-wrap .ase-page-title {
-    display: block;
-    margin: 0;
-    color: var(--ase-white);
-    font-size: 17px;
-    font-weight: 500;
-    letter-spacing: 0.01em;
-    line-height: 1.3;
+	display: block;
+	margin: 0;
+	color: var(--ase-white);
+	font-size: 17px;
+	font-weight: 500;
+	letter-spacing: 0.01em;
+	line-height: 1.3;
 }
 
 .ase-wrap .ase-version {
-    flex: 0 0 auto;
-    color: rgba(255, 255, 255, 0.72);
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 2px;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    line-height: 1.5;
-    text-transform: uppercase;
+	flex: 0 0 auto;
+	color: rgba(255, 255, 255, 0.72);
+	background: rgba(255, 255, 255, 0.12);
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	border-radius: 2px;
+	font-size: 11px;
+	font-weight: 500;
+	letter-spacing: 0.05em;
+	line-height: 1.5;
+	text-transform: uppercase;
 }
 
 .ase-page-body {
-    padding: 22px;
+	padding: 22px;
 }
 
 .ase-wrap > .description,
 .ase-wrap .description,
 .ase-card-header .description {
-    color: var(--ase-muted);
-    line-height: 1.65;
+	color: var(--ase-muted);
+	line-height: 1.65;
 }
 
 .ase-section-h2,
 .ase-status-title,
 .ase-ie-panel h2 {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--ase-default);
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--ase-default);
+	font-size: 13px;
+	font-weight: 500;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
 }
 
 .ase-section-h2::before,
 .ase-status-title::before,
 .ase-ie-panel h2::before {
-    content: "";
-    width: 5px;
-    height: 5px;
-    flex: 0 0 auto;
-    background: var(--ase-primary);
-    opacity: 0.45;
-    transform: rotate(45deg);
+	content: "";
+	width: 5px;
+	height: 5px;
+	flex: 0 0 auto;
+	background: var(--ase-primary);
+	opacity: 0.45;
+	transform: rotate(45deg);
 }
 
 .ase-status-wrap,
@@ -559,34 +559,34 @@ body.settings_page_advanced-schema-extender #setting-error-settings_updated {
 .ase-ie-panel,
 .ase-location-card,
 .ase-faq-row {
-    background: var(--ase-white);
-    border-color: var(--ase-border);
-    border-radius: 4px;
-    box-shadow: var(--ase-shadow);
+	background: var(--ase-white);
+	border-color: var(--ase-border);
+	border-radius: 4px;
+	box-shadow: var(--ase-shadow);
 }
 
 .ase-status-wrap,
 .ase-card,
 .ase-ie-panel {
-    margin-bottom: 24px;
+	margin-bottom: 24px;
 }
 
 .ase-status-title {
-    margin: 0 0 10px;
+	margin: 0 0 10px;
 }
 
 .ase-status-table th,
 .ase-status-table td {
-    border-bottom-color: var(--ase-border);
-    color: var(--ase-default);
+	border-bottom-color: var(--ase-border);
+	color: var(--ase-default);
 }
 
 .ase-status-table thead th,
 .ase-card-header,
 .ase-location-head,
 .ase-row-divider th {
-    background: var(--ase-surface);
-    border-color: var(--ase-border);
+	background: var(--ase-surface);
+	border-color: var(--ase-border);
 }
 
 .ase-status-table thead th,
@@ -594,76 +594,76 @@ body.settings_page_advanced-schema-extender #setting-error-settings_updated {
 .ase-location-title,
 .ase-faq-row label,
 .ase-ie-col h3 {
-    color: var(--ase-default);
-    font-weight: 500;
+	color: var(--ase-default);
+	font-weight: 500;
 }
 
 .ase-status-note {
-    color: var(--ase-muted);
+	color: var(--ase-muted);
 }
 
 .ase-card-body {
-    padding: 20px 22px;
+	padding: 20px 22px;
 }
 
 .ase-card-body .form-table th {
-    color: var(--ase-default);
+	color: var(--ase-default);
 }
 
 .ase-card-body .form-table td {
-    color: var(--ase-default);
+	color: var(--ase-default);
 }
 
 .ase-section-h2--inner {
-    border-top-color: var(--ase-border);
+	border-top-color: var(--ase-border);
 }
 
 .ase-row-divider th {
-    position: relative;
-    overflow: hidden;
-    border-radius: 3px;
-    color: var(--ase-muted);
+	position: relative;
+	overflow: hidden;
+	border-radius: 3px;
+	color: var(--ase-muted);
 }
 
 .ase-row-divider th::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 12px 12px 0 0;
-    border-color: var(--ase-primary) transparent transparent transparent;
-    opacity: 0.55;
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 0;
+	height: 0;
+	border-style: solid;
+	border-width: 12px 12px 0 0;
+	border-color: var(--ase-primary) transparent transparent transparent;
+	opacity: 0.55;
 }
 
 .ase-badge {
-    border-radius: 2px;
-    font-weight: 500;
-    letter-spacing: 0.06em;
+	border-radius: 2px;
+	font-weight: 500;
+	letter-spacing: 0.06em;
 }
 
 .ase-badge--baseline {
-    color: var(--ase-primary);
-    background: rgba(47, 111, 170, 0.1);
-    border-color: rgba(47, 111, 170, 0.2);
+	color: var(--ase-primary);
+	background: rgba(47, 111, 170, 0.1);
+	border-color: rgba(47, 111, 170, 0.2);
 }
 
 .ase-badge--extender,
 .ase-badge--good,
 .ase-good {
-    color: var(--ase-success);
-    background: rgba(58, 125, 68, 0.1);
-    border-color: rgba(58, 125, 68, 0.22);
+	color: var(--ase-success);
+	background: rgba(58, 125, 68, 0.1);
+	border-color: rgba(58, 125, 68, 0.22);
 }
 
 .ase-badge--merged,
 .ase-badge--warn,
 .ase-warn {
-    color: var(--ase-highlight);
-    background: rgba(205, 55, 0, 0.1);
-    border-color: rgba(205, 55, 0, 0.2);
+	color: var(--ase-highlight);
+	background: rgba(205, 55, 0, 0.1);
+	border-color: rgba(205, 55, 0, 0.2);
 }
 
 .ase-wrap input[type="text"],
@@ -672,9 +672,9 @@ body.settings_page_advanced-schema-extender #setting-error-settings_updated {
 .ase-wrap input[type="number"],
 .ase-wrap select,
 .ase-wrap textarea {
-    border-color: var(--ase-border);
-    border-radius: 3px;
-    color: var(--ase-default);
+	border-color: var(--ase-border);
+	border-radius: 3px;
+	color: var(--ase-default);
 }
 
 .ase-wrap input[type="text"]:focus,
@@ -683,186 +683,185 @@ body.settings_page_advanced-schema-extender #setting-error-settings_updated {
 .ase-wrap input[type="number"]:focus,
 .ase-wrap select:focus,
 .ase-wrap textarea:focus {
-    border-color: var(--ase-primary);
-    box-shadow: 0 0 0 3px rgba(47, 111, 170, 0.1);
-    outline: none;
+	border-color: var(--ase-primary);
+	box-shadow: 0 0 0 3px rgba(47, 111, 170, 0.1);
+	outline: none;
 }
 
 .ase-wrap textarea.code,
 #ase-opening-hours,
 #ase-export-json,
 .ase-location-body textarea.code {
-    background: var(--ase-surface);
-    color: var(--ase-default);
-    font-family: Roboto, Menlo, Consolas, monospace;
+	background: var(--ase-surface);
+	color: var(--ase-default);
+	font-family: Roboto, Menlo, Consolas, monospace;
 }
 
 .ase-wrap .button-primary {
-    background: var(--ase-primary);
-    border-color: var(--ase-primary);
-    border-radius: 3px;
-    box-shadow: none;
-    font-weight: 400;
+	background: var(--ase-primary);
+	border-color: var(--ase-primary);
+	border-radius: 3px;
+	box-shadow: none;
+	font-weight: 400;
 }
 
 .ase-wrap .button-primary:hover,
 .ase-wrap .button-primary:focus {
-    background: #285f91;
-    border-color: #285f91;
-    box-shadow: 0 2px 8px rgba(47, 111, 170, 0.28);
+	background: #285f91;
+	border-color: #285f91;
+	box-shadow: 0 2px 8px rgba(47, 111, 170, 0.28);
 }
 
 .ase-wrap .button:not(.button-primary) {
-    border-color: var(--ase-border);
-    border-radius: 3px;
-    color: var(--ase-primary);
+	border-color: var(--ase-border);
+	border-radius: 3px;
+	color: var(--ase-primary);
 }
 
 .ase-wrap .button:not(.button-primary):hover,
 .ase-wrap .button:not(.button-primary):focus {
-    border-color: rgba(47, 111, 170, 0.35);
-    color: var(--ase-primary);
-    background: rgba(47, 111, 170, 0.06);
+	border-color: rgba(47, 111, 170, 0.35);
+	color: var(--ase-primary);
+	background: rgba(47, 111, 170, 0.06);
 }
 
 .ase-card-body p.submit {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 0;
+	display: flex;
+	justify-content: flex-end;
+	margin-bottom: 0;
 }
 
 .ase-sticky-save-bar {
-    position: fixed;
-    right: auto;
-    bottom: 18px;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 14px;
-    box-sizing: border-box;
-    padding: 12px 18px;
-    background: rgba(255, 255, 255, 0.96);
-    border: 1px solid var(--ase-border);
-    border-radius: 4px;
-    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.12);
-    backdrop-filter: blur(5px);
+	position: fixed;
+	right: auto;
+	bottom: 18px;
+	z-index: 1000;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 14px;
+	box-sizing: border-box;
+	padding: 12px 18px;
+	background: rgba(255, 255, 255, 0.96);
+	border: 1px solid var(--ase-border);
+	border-radius: 4px;
+	box-shadow: 0 6px 22px rgba(0, 0, 0, 0.12);
+	backdrop-filter: blur(5px);
 }
 
 .ase-sticky-save-bar[hidden] {
-    display: none;
+	display: none;
 }
 
 .ase-sticky-save-text {
-    color: var(--ase-muted);
-    font-size: 12px;
-    line-height: 1.4;
+	color: var(--ase-muted);
+	font-size: 12px;
+	line-height: 1.4;
 }
 
 .ase-ie-panel h2 {
-    margin-bottom: 16px;
-    border-bottom-color: var(--ase-border);
+	margin-bottom: 16px;
+	border-bottom-color: var(--ase-border);
 }
 
 .ase-ie-col h3 {
-    color: var(--ase-default);
-    letter-spacing: 0.02em;
+	color: var(--ase-default);
+	letter-spacing: 0.02em;
 }
 
 .ase-credit {
-    margin: 18px 0 0;
-    color: rgba(136, 136, 136, 0.72);
-    font-size: 11px;
-    line-height: 1.6;
-    text-align: center;
+	margin: 18px 0 0;
+	color: rgba(136, 136, 136, 0.72);
+	font-size: 11px;
+	line-height: 1.6;
+	text-align: center;
 }
 
 .ase-credit a {
-    color: inherit;
-    text-decoration: none;
+	color: inherit;
+	text-decoration: none;
 }
 
 .ase-credit a:hover,
 .ase-credit a:focus {
-    color: var(--ase-muted);
-    text-decoration: underline;
+	color: var(--ase-muted);
+	text-decoration: underline;
 }
 
 @media (max-width: 782px) {
-    .ase-topbar {
-        align-items: flex-start;
-        flex-direction: column;
-        background-position: right 14px top 14px;
-    }
+	.ase-topbar {
+		align-items: flex-start;
+		flex-direction: column;
+		background-position: right 14px top 14px;
+	}
 
-    .ase-wrap .ase-page-title {
-        padding-right: 72px;
-        font-size: 16px;
-    }
+	.ase-wrap .ase-page-title {
+		padding-right: 72px;
+		font-size: 16px;
+	}
 
-    .ase-page-body {
-        padding: 16px;
-    }
+	.ase-page-body {
+		padding: 16px;
+	}
 
-    .ase-status-wrap {
-        padding: 12px;
-    }
+	.ase-status-wrap {
+		padding: 12px;
+	}
 
-    .ase-status-table {
-        min-width: 720px;
-    }
+	.ase-status-table {
+		min-width: 720px;
+	}
 
-    .ase-card-body .form-table,
-    .ase-card-body .form-table tbody,
-    .ase-card-body .form-table tr,
-    .ase-card-body .form-table th,
-    .ase-card-body .form-table td,
-    .ase-location-body .form-table,
-    .ase-location-body .form-table tbody,
-    .ase-location-body .form-table tr,
-    .ase-location-body .form-table th,
-    .ase-location-body .form-table td {
-        display: block;
-        width: 100%;
-        box-sizing: border-box;
-    }
+	.ase-card-body .form-table,
+	.ase-card-body .form-table tbody,
+	.ase-card-body .form-table tr,
+	.ase-card-body .form-table th,
+	.ase-card-body .form-table td,
+	.ase-location-body .form-table,
+	.ase-location-body .form-table tbody,
+	.ase-location-body .form-table tr,
+	.ase-location-body .form-table th,
+	.ase-location-body .form-table td {
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+	}
 
-    .ase-card-body .form-table th,
-    .ase-location-body .form-table th {
-        padding: 12px 0 4px;
-    }
+	.ase-card-body .form-table th,
+	.ase-location-body .form-table th {
+		padding: 12px 0 4px;
+	}
 
-    .ase-card-body .form-table td,
-    .ase-location-body .form-table td {
-        padding: 0 0 10px;
-    }
+	.ase-card-body .form-table td,
+	.ase-location-body .form-table td {
+		padding: 0 0 10px;
+	}
 
-    .ase-wrap input.regular-text,
-    .ase-wrap input.large-text,
-    .ase-wrap textarea,
-    .ase-wrap select {
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-    }
+	.ase-wrap input.regular-text,
+	.ase-wrap input.large-text,
+	.ase-wrap textarea,
+	.ase-wrap select {
+		width: 100%;
+		max-width: 100%;
+		box-sizing: border-box;
+	}
 
-    .ase-subtype-grid,
-    .ase-logo-picker {
-        align-items: stretch;
-        flex-direction: column;
-    }
+	.ase-subtype-grid,
+	.ase-logo-picker {
+		align-items: stretch;
+		flex-direction: column;
+	}
 
-    .ase-generate-opening-hours {
-        margin-left: 0;
-    }
+	.ase-generate-opening-hours {
+		margin-left: 0;
+	}
 
-    .ase-sticky-save-bar {
-        bottom: 10px;
-        padding: 10px 12px;
-    }
+	.ase-sticky-save-bar {
+		bottom: 10px;
+		padding: 10px 12px;
+	}
 
-    .ase-sticky-save-text {
-        display: none;
-    }
+	.ase-sticky-save-text {
+		display: none;
+	}
 }
-

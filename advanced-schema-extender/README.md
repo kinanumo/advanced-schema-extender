@@ -1,21 +1,13 @@
 # Advanced Schema Extender for Yoast
 
-Copyright 2026 Kendrick Omar Salting (kinanumo.com). All Rights Reserved.
+Copyright 2026 Kendrick Omar Salting (neirdkc.xyz).
 
-PROPRIETARY LICENSE
+## License
 
-1. PERMITTED USE: This software is licensed, not sold. You are granted a non-exclusive, 
-non-transferable license to use this plugin on a single website per purchase.
-
-2. RESTRICTIONS: You may not redistribute, resell, lease, sublicense, or share the 
-source code with any third party. The use of this code for "nulled" marketplaces 
-or public distribution is strictly prohibited.
-
-3. NO REFUNDS: Due to the nature of the software being digital and the source code 
-being exposed upon purchase, all sales are final.
-
-4. DERIVATIVE WORKS: You may modify the code for your own personal use, but the 
-original and modified code remains under this restrictive license and cannot 
-be redistributed or sold.
+You may copy, use, modify, and share this software, including modified versions,
+at no charge. You may not sell the software or modified versions, or charge a
+fee for access to or copies of the software. This restriction does not prohibit
+using the software on a commercial website or providing paid services that use
+it.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
