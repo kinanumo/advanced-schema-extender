@@ -425,23 +425,25 @@ body.settings_page_advanced-schema-extender #setting-error-settings_updated {
 }
 
 /* =================================================================
- * Kinanumo brand refresh
- * Quiet WordPress-admin styling based on the Kinanumo brand guide.
+ * neirDKC brand system
+ * Quiet WordPress-admin styling based on the neirDKC brand guide.
  * ================================================================= */
 .ase-wrap {
-	--ase-primary: #2f6faa;
+	--ase-primary: #333333;
 	--ase-highlight: #cd3700;
 	--ase-default: #333333;
-	--ase-muted: #888888;
-	--ase-border: #e0e0e0;
-	--ase-surface: #f9f9f9;
+	--ase-muted: #6f6f6f;
+	--ase-border: #d8d8d8;
+	--ase-surface: #f5f5f3;
 	--ase-white: #ffffff;
-	--ase-success: #3a7d44;
-	--ase-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+	--ase-success: #2f6b45;
+	--ase-warning: #8a5a00;
+	--ase-danger: #a72d00;
+	--ase-shadow: 0 1px 4px rgba(51, 51, 51, 0.08);
 
 	max-width: 1100px;
 	color: var(--ase-default);
-	font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .ase-page-shell {
@@ -461,37 +463,20 @@ body.settings_page_advanced-schema-extender #setting-error-settings_updated {
 	min-height: 58px;
 	padding: 14px 22px;
 	background-color: var(--ase-primary);
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='40'%3E%3Cpolygon points='6,2 14,15 0,15' fill='white' fill-opacity='0.13'/%3E%3Cpolygon points='22,5 30,18 14,18' fill='white' fill-opacity='0.09'/%3E%3Cpolygon points='38,0 46,13 30,13' fill='white' fill-opacity='0.11'/%3E%3Cpolygon points='54,3 62,16 46,16' fill='white' fill-opacity='0.07'/%3E%3Cpolygon points='70,1 78,14 62,14' fill='white' fill-opacity='0.05'/%3E%3Cpolygon points='14,20 22,33 6,33' fill='white' fill-opacity='0.07'/%3E%3Cpolygon points='30,17 38,30 22,30' fill='white' fill-opacity='0.05'/%3E%3Cpolygon points='46,19 54,32 38,32' fill='white' fill-opacity='0.04'/%3E%3Cpolygon points='62,18 70,31 54,31' fill='white' fill-opacity='0.03'/%3E%3C/svg%3E");
-	background-position: right 24px center;
+	background-image:
+		repeating-linear-gradient(45deg, transparent 0 22px, rgba(205, 55, 0, 0.18) 22px 23px),
+		repeating-linear-gradient(-45deg, transparent 0 22px, rgba(245, 245, 243, 0.12) 22px 23px);
+	background-position: right center;
 	background-repeat: no-repeat;
-	background-size: 88px 40px;
+	background-size: 240px 100%;
+	border-bottom: 3px solid var(--ase-highlight);
 }
 
 .ase-topbar-title {
 	display: flex;
 	align-items: center;
-	gap: 12px;
+	gap: 0;
 	min-width: 0;
-}
-
-.ase-brand-mark {
-	display: inline-flex;
-	flex: 0 0 auto;
-	align-items: center;
-	justify-content: center;
-	width: 22px;
-	height: 24px;
-}
-
-.ase-brand-mark svg {
-	display: block;
-	width: 22px;
-	height: 24px;
-	fill: var(--ase-white);
-}
-
-.ase-brand-mark .ase-brand-spark {
-	fill: var(--ase-highlight);
 }
 
 .ase-wrap .ase-page-title {
@@ -499,8 +484,8 @@ body.settings_page_advanced-schema-extender #setting-error-settings_updated {
 	margin: 0;
 	color: var(--ase-white);
 	font-size: 17px;
-	font-weight: 500;
-	letter-spacing: 0.01em;
+	font-weight: 700;
+	letter-spacing: 0;
 	line-height: 1.3;
 }
 
@@ -512,7 +497,7 @@ body.settings_page_advanced-schema-extender #setting-error-settings_updated {
 	border-radius: 2px;
 	font-size: 11px;
 	font-weight: 500;
-	letter-spacing: 0.05em;
+	letter-spacing: 0;
 	line-height: 1.5;
 	text-transform: uppercase;
 }
@@ -537,7 +522,7 @@ body.settings_page_advanced-schema-extender #setting-error-settings_updated {
 	color: var(--ase-default);
 	font-size: 13px;
 	font-weight: 500;
-	letter-spacing: 0.08em;
+	letter-spacing: 0;
 	text-transform: uppercase;
 }
 
@@ -548,8 +533,8 @@ body.settings_page_advanced-schema-extender #setting-error-settings_updated {
 	width: 5px;
 	height: 5px;
 	flex: 0 0 auto;
-	background: var(--ase-primary);
-	opacity: 0.45;
+	background: var(--ase-highlight);
+	opacity: 0.85;
 	transform: rotate(45deg);
 }
 
@@ -634,8 +619,8 @@ body.settings_page_advanced-schema-extender #setting-error-settings_updated {
 	height: 0;
 	border-style: solid;
 	border-width: 12px 12px 0 0;
-	border-color: var(--ase-primary) transparent transparent transparent;
-	opacity: 0.55;
+	border-color: var(--ase-highlight) transparent transparent transparent;
+	opacity: 0.75;
 }
 
 .ase-badge {
@@ -645,9 +630,9 @@ body.settings_page_advanced-schema-extender #setting-error-settings_updated {
 }
 
 .ase-badge--baseline {
-	color: var(--ase-primary);
-	background: rgba(47, 111, 170, 0.1);
-	border-color: rgba(47, 111, 170, 0.2);
+	color: var(--ase-default);
+	background: rgba(51, 51, 51, 0.08);
+	border-color: rgba(51, 51, 51, 0.16);
 }
 
 .ase-badge--extender,
@@ -675,6 +660,7 @@ body.settings_page_advanced-schema-extender #setting-error-settings_updated {
 	border-color: var(--ase-border);
 	border-radius: 3px;
 	color: var(--ase-default);
+	accent-color: var(--ase-highlight);
 }
 
 .ase-wrap input[type="text"]:focus,
@@ -683,8 +669,8 @@ body.settings_page_advanced-schema-extender #setting-error-settings_updated {
 .ase-wrap input[type="number"]:focus,
 .ase-wrap select:focus,
 .ase-wrap textarea:focus {
-	border-color: var(--ase-primary);
-	box-shadow: 0 0 0 3px rgba(47, 111, 170, 0.1);
+	border-color: var(--ase-highlight);
+	box-shadow: 0 0 0 3px rgba(205, 55, 0, 0.16);
 	outline: none;
 }
 
@@ -694,7 +680,7 @@ body.settings_page_advanced-schema-extender #setting-error-settings_updated {
 .ase-location-body textarea.code {
 	background: var(--ase-surface);
 	color: var(--ase-default);
-	font-family: Roboto, Menlo, Consolas, monospace;
+	font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
 .ase-wrap .button-primary {
@@ -707,22 +693,43 @@ body.settings_page_advanced-schema-extender #setting-error-settings_updated {
 
 .ase-wrap .button-primary:hover,
 .ase-wrap .button-primary:focus {
-	background: #285f91;
-	border-color: #285f91;
-	box-shadow: 0 2px 8px rgba(47, 111, 170, 0.28);
+	background: #262626;
+	border-color: #262626;
+	box-shadow: 0 2px 8px rgba(51, 51, 51, 0.2);
 }
 
 .ase-wrap .button:not(.button-primary) {
 	border-color: var(--ase-border);
 	border-radius: 3px;
-	color: var(--ase-primary);
+	color: var(--ase-default);
 }
 
 .ase-wrap .button:not(.button-primary):hover,
 .ase-wrap .button:not(.button-primary):focus {
-	border-color: rgba(47, 111, 170, 0.35);
-	color: var(--ase-primary);
-	background: rgba(47, 111, 170, 0.06);
+	border-color: var(--ase-highlight);
+	color: var(--ase-default);
+	background: var(--ase-surface);
+}
+
+.ase-wrap a:not(.button),
+.ase-remove-location,
+.ase-remove-faq {
+	color: var(--ase-danger);
+}
+
+.ase-clear-logo,
+.ase-remove-location,
+.ase-remove-faq {
+	color: var(--ase-danger) !important;
+}
+
+.ase-wrap a:not(.button):focus-visible,
+.ase-wrap .button:focus-visible,
+.ase-wrap input:focus-visible,
+.ase-wrap select:focus-visible,
+.ase-wrap textarea:focus-visible {
+	outline: 2px solid var(--ase-highlight);
+	outline-offset: 2px;
 }
 
 .ase-card-body p.submit {
@@ -790,14 +797,16 @@ body.settings_page_advanced-schema-extender #setting-error-settings_updated {
 
 @media (max-width: 782px) {
 	.ase-topbar {
-		align-items: flex-start;
-		flex-direction: column;
-		background-position: right 14px top 14px;
+		align-items: center;
+		flex-direction: row;
+		background-position: right center;
+		background-size: 150px 100%;
 	}
 
 	.ase-wrap .ase-page-title {
-		padding-right: 72px;
-		font-size: 16px;
+		padding-right: 0;
+		font-size: 15px;
+		overflow-wrap: anywhere;
 	}
 
 	.ase-page-body {

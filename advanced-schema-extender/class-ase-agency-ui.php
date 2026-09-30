@@ -937,13 +937,6 @@ JS;
 			<div class="ase-page-shell">
 				<div class="ase-topbar">
 					<div class="ase-topbar-title">
-						<span class="ase-brand-mark" aria-hidden="true">
-							<svg viewBox="0 0 51 55" focusable="false" role="img">
-								<path d="M0 26.7627L17.4805 53.5254H29.7881L12.3076 26.7627L29.7881 0H17.4805L0 26.7627Z" />
-								<path d="M36.9248 53.5251V19.6753H46.3128V53.5251H36.9248Z" />
-								<path class="ase-brand-spark" d="M43.9834 3.92285L47.3975 1.96191L49.8018 6.10645L46.3877 8.06738L49.8018 10.0293L47.3975 14.1738L43.9834 12.2119V16.1348H39.1748V12.2119L35.7607 14.1738L33.3564 10.0293L36.7695 8.06738L33.3564 6.10645L35.7607 1.96191L39.1748 3.92285V0H43.9834V3.92285Z" />
-							</svg>
-						</span>
 						<span class="ase-page-title" role="heading" aria-level="1"><?php esc_html_e( 'Advanced Schema Extender for Yoast', 'advanced-schema-extender' ); ?></span>
 					</div>
 					<span class="ase-version">v<?php echo esc_html( ASE_VERSION ); ?></span>
