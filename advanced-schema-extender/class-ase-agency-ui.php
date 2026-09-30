@@ -64,7 +64,7 @@ final class ASE_Agency_UI {
 	/** Register the plugin settings page. */
 	public function register_menu(): void {
 		add_options_page(
-			__( 'Advanced Schema Extender for Yoast', 'advanced-schema-extender' ),
+			__( 'Advanced Schema Extender', 'advanced-schema-extender' ),
 			__( 'Schema Extender', 'advanced-schema-extender' ),
 			'manage_options',
 			ASE_PAGE_SLUG,
@@ -965,7 +965,7 @@ JS;
 			<div class="ase-page-shell">
 				<div class="ase-topbar">
 					<div class="ase-topbar-title">
-						<span class="ase-page-title" role="heading" aria-level="1"><?php esc_html_e( 'Advanced Schema Extender for Yoast', 'advanced-schema-extender' ); ?></span>
+						<span class="ase-page-title" role="heading" aria-level="1"><?php esc_html_e( 'Advanced Schema Extender', 'advanced-schema-extender' ); ?></span>
 					</div>
 					<span class="ase-version">v<?php echo esc_html( ASE_VERSION ); ?></span>
 				</div>

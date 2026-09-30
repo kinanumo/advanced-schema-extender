@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       Advanced Schema Extender for Yoast
+ * Plugin Name:       Advanced Schema Extender
  * Plugin URI:        https://github.com/kinanumo/advanced-schema-extender
  * Description:       Extends your site schema graph with Organization enrichment, multi-location LocalBusiness support, and a per-post FAQ builder.
  * Version:           4.0.0
@@ -44,5 +44,5 @@ add_action( 'plugins_loaded', 'ase_bootstrap' );
  * @return void
  */
 function ase_dependency_missing_notice(): void {
-	echo '<div class="notice notice-warning"><p><strong>Advanced Schema Extender for Yoast</strong> requires <strong>Yoast SEO</strong> to actually output schema. Install or activate Yoast SEO to see merged graph results.</p></div>';
+	echo '<div class="notice notice-warning"><p><strong>Yoast SEO</strong> is required for Advanced Schema Extender to output schema. Activate Yoast SEO to use the schema graph integration.</p></div>';
 }

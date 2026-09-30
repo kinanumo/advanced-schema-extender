@@ -1,6 +1,6 @@
-# Advanced Schema Extender for Yoast
+# Advanced Schema Extender
 
-Enrich Yoast SEO's schema graph with Organization and LocalBusiness details, multiple business locations, and per-post FAQ schema.
+Extend your WordPress schema graph with Organization and LocalBusiness details, multiple locations, and per-post FAQ schema. Works with Yoast SEO.
 
 ## Repository
 
@@ -10,15 +10,19 @@ The installable WordPress plugin is in [`advanced-schema-extender/`](advanced-sc
 
 - WordPress 6.0 or later.
 - PHP 7.4 or later.
-- Yoast SEO for schema output. Plugin settings remain available without Yoast, but schema filters are registered only when Yoast's schema API is available.
+- Yoast SEO for schema output integration. Plugin settings remain available without Yoast SEO, but schema filters are registered only when its schema API is available.
 
 ## Install
 
-Copy the `advanced-schema-extender/` directory into `wp-content/plugins/`, activate **Advanced Schema Extender for Yoast**, then open **Settings > Schema Extender**.
+Copy the `advanced-schema-extender/` directory into `wp-content/plugins/`, activate **Advanced Schema Extender**, then open **Settings > Schema Extender**.
 
 ## Support
 
 <a href="https://www.buymeacoffee.com/neirdkc" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-red.png" alt="Buy Me a Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
+## Trademark Notice
+
+Yoast and Yoast SEO are trademarks of Yoast BV. This project is independent and is not affiliated with or endorsed by Yoast BV.
 
 ## License
 
